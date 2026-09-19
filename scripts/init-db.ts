@@ -12,7 +12,7 @@ async function main() {
     SELECT table_name
     FROM information_schema.tables
     WHERE table_schema = 'public'
-      AND table_name IN ('users')
+      AND table_name IN ('users', 'clients', 'dogs', 'sanitary_itens')
     ORDER BY table_name
   `);
 

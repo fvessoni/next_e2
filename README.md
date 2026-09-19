@@ -1,11 +1,11 @@
 # KintalVax — next_e2
 
-Next.js app bootstrapped from `next_e1`, currently limited to login and user management.
+Next.js app bootstrapped from `next_e1`, currently limited to login, users, clients, dogs, and sanitary items.
 
 ## Requirements
 
 - Node.js 20+
-- PostgreSQL (Neon) — `next_e2` uses its own Neon database (`next_e2`) with only the `users` table. Configure `.env` with `DATABASE_URL` and `AUTH_SECRET`.
+- PostgreSQL (Neon) — `next_e2` uses its own Neon database (`next_e2`) with `users`, `clients`, `dogs`, and `sanitary_itens`. Configure `.env` with `DATABASE_URL` and `AUTH_SECRET`.
 
 ## Setup
 
@@ -38,6 +38,6 @@ npm run db:set-password -- email@example.com yourpassword "Display Name"
 | Command                   | Description                  |
 | ------------------------- | ---------------------------- |
 | `npm run dev`             | Dev server (webpack)         |
-| `npm run db:init`         | Create the users table       |
+| `npm run db:init`         | Create users, clients, dogs, and sanitary_itens tables |
 | `npm run db:seed-user`    | Create demo admin user       |
 | `npm run db:set-password` | Create/update admin password |
