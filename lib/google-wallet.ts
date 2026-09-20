@@ -28,9 +28,15 @@ type GenericPass = {
   cardTitle: LocalizedString;
   header: LocalizedString;
   subheader: LocalizedString;
-  barcode: { type: "QR_CODE"; value: string };
+  barcode: { type: "QR_CODE"; value: string; alternateText: string };
   textModulesData: { id: string; header: string; body: string }[];
   linksModuleData: { uris: { uri: string; description: string; id: string }[] };
+  appLinkData: {
+    webAppLinkInfo: {
+      appTarget: { targetUri: { uri: string; description: string } };
+    };
+    displayText: LocalizedString;
+  };
   validTimeInterval?: { end: { date: string } };
 };
 
@@ -122,6 +128,17 @@ function nextExpiry(items: SanitaryItem[]) {
     .valid_to;
 }
 
+function sanitarySummary(items: SanitaryItem[], today: string) {
+  if (items.length === 0) return "Nenhum item sanitário";
+  return items
+    .slice(0, 4)
+    .map((item) => {
+      const status = isSanitaryItemCurrent(item, today) ? "vigente" : "vencido";
+      return `${item.item} (${status} até ${formatDate(item.valid_to)})`;
+    })
+    .join(" · ");
+}
+
 function buildGenericObject(
   issuerId: string,
   dog: Dog,
@@ -146,16 +163,28 @@ function buildGenericObject(
     cardTitle: loc(PASS_TITLE),
     header: loc(clip(dog.name, 40)),
     subheader: loc("Certificado de vacinação"),
-    barcode: { type: "QR_CODE", value: certificateUrl },
+    barcode: {
+      type: "QR_CODE",
+      value: certificateUrl,
+      alternateText: certificateUrl,
+    },
     textModulesData: [
       { id: "tutor", header: "Tutor", body: clip(tutor.name, 40) },
       {
-        id: "validade",
-        header: "Validade",
-        body: clip(
-          `${DOG_SIZE_LABELS[dog.size]} · ${validityLabel}`,
-          40,
-        ),
+        id: "dog",
+        header: "Cão",
+        body: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 60),
+      },
+      {
+        id: "sanitary",
+        header: "Sanitário",
+        body: clip(sanitarySummary(items, today), 120),
+      },
+      { id: "validade", header: "Validade", body: clip(validityLabel, 40) },
+      {
+        id: "web",
+        header: "Certificado web",
+        body: clip(certificateUrl, 80),
       },
     ],
     linksModuleData: {
@@ -163,9 +192,20 @@ function buildGenericObject(
         {
           id: "certificate",
           uri: certificateUrl,
-          description: "Ver certificado",
+          description: "Abrir certificado na web",
         },
       ],
+    },
+    appLinkData: {
+      webAppLinkInfo: {
+        appTarget: {
+          targetUri: {
+            uri: certificateUrl,
+            description: "Certificado de vacinação na web",
+          },
+        },
+      },
+      displayText: loc("Ver certificado"),
     },
   };
 
