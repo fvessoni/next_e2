@@ -4,7 +4,6 @@ import { APP_NAME, BrandMark } from "@/app/components/brand-logo";
 import { isGoogleWalletConfigured } from "@/lib/google-wallet";
 import { formatCpf, formatMobile } from "@/lib/br";
 import {
-  certificatePath,
   certificateQrSvg,
   getCertificateUrl,
   getVaccinationCertificate,
@@ -221,12 +220,14 @@ export default async function VaccinationCertificatePage({
           </section>
 
           <footer className="mt-8 border-t border-border pt-4 text-xs text-muted-foreground">
-            <p>
-              Documento público. Consulte a autenticidade em{" "}
-              <span className="break-all font-mono text-foreground">
-                {certificatePath(dog.dog_id)}
-              </span>
-              .
+            <p>Documento público. Consulte a autenticidade em</p>
+            <p className="mt-1">
+              <a
+                href={publicUrl}
+                className="relative z-10 break-all font-mono text-foreground underline underline-offset-2 hover:text-primary"
+              >
+                {publicUrl}
+              </a>
             </p>
           </footer>
         </article>

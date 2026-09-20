@@ -30,8 +30,18 @@ type GenericPass = {
   subheader: LocalizedString;
   barcode: { type: "QR_CODE"; value: string; alternateText: string };
   textModulesData: { id: string; header: string; body: string }[];
-  linksModuleData: { uris: { uri: string; description: string; id: string }[] };
+  linksModuleData: {
+    uris: {
+      uri: string;
+      description: string;
+      id: string;
+      localizedDescription: LocalizedString;
+    }[];
+  };
   appLinkData: {
+    androidAppLinkInfo: {
+      appTarget: { targetUri: { uri: string; description: string } };
+    };
     webAppLinkInfo: {
       appTarget: { targetUri: { uri: string; description: string } };
     };
@@ -181,22 +191,26 @@ function buildGenericObject(
         body: clip(sanitarySummary(items, today), 120),
       },
       { id: "validade", header: "Validade", body: clip(validityLabel, 40) },
-      {
-        id: "web",
-        header: "Certificado web",
-        body: clip(certificateUrl, 80),
-      },
     ],
     linksModuleData: {
       uris: [
         {
           id: "certificate",
           uri: certificateUrl,
-          description: "Abrir certificado na web",
+          description: certificateUrl,
+          localizedDescription: loc("Abrir certificado na web"),
         },
       ],
     },
     appLinkData: {
+      androidAppLinkInfo: {
+        appTarget: {
+          targetUri: {
+            uri: certificateUrl,
+            description: "Certificado de vacinação na web",
+          },
+        },
+      },
       webAppLinkInfo: {
         appTarget: {
           targetUri: {
