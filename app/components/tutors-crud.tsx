@@ -2,13 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { Fragment, useState, useTransition } from "react";
-import {
-  createClientAction,
-  deleteClientAction,
-  updateClientAction,
-} from "@/app/actions/clients";
 import { deleteDogAction } from "@/app/actions/dogs";
-import { DogsCrud } from "@/app/components/dogs-crud";
+import {
+  createTutorAction,
+  deleteTutorAction,
+  updateTutorAction,
+} from "@/app/actions/tutors";
 import { DogsTable } from "@/app/components/dogs-table";
 import { formatCpf, formatMobile } from "@/lib/br";
 import {
@@ -16,11 +15,12 @@ import {
   btnPrimary,
   cardClass,
   inputClass,
+  linkClass,
   pageSubtitle,
   pageTitle,
   tableHeadClass,
 } from "@/lib/ui";
-import type { ClientListRow, Dog, SanitaryItem } from "@/lib/types";
+import type { Dog, SanitaryItem, TutorListRow } from "@/lib/types";
 
 type FormMode = "create" | "edit" | null;
 
@@ -31,43 +31,38 @@ const emptyForm = {
   mobile: "",
 };
 
-export function ClientsCrud({
-  clients,
-  dogsByClient,
+export function TutorsCrud({
+  tutors,
+  dogsByTutor,
   itemsByDog,
 }: {
-  clients: ClientListRow[];
-  dogsByClient: Record<number, Dog[]>;
+  tutors: TutorListRow[];
+  dogsByTutor: Record<number, Dog[]>;
   itemsByDog: Record<number, SanitaryItem[]>;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [formMode, setFormMode] = useState<FormMode>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [startEditingDogId, setStartEditingDogId] = useState<number | null>(
-    null,
-  );
-  const [expandedClientId, setExpandedClientId] = useState<number | null>(null);
+  const [expandedTutorId, setExpandedTutorId] = useState<number | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState<string[]>([]);
 
   function openCreate() {
     setForm(emptyForm);
     setEditingId(null);
-    setStartEditingDogId(null);
     setErrors([]);
     setFormMode("create");
   }
 
-  function openEdit(client: ClientListRow, dogId: number | null = null) {
+  function openEdit(tutor: TutorListRow) {
     setForm({
-      cpf: formatCpf(client.cpf),
-      name: client.name,
-      email: client.email,
-      mobile: formatMobile(client.mobile),
+      cpf: formatCpf(tutor.cpf),
+      name: tutor.name,
+      email: tutor.email,
+      mobile: formatMobile(tutor.mobile),
     });
-    setEditingId(client.client_id);
-    setStartEditingDogId(dogId);
+    setEditingId(tutor.tutor_id);
     setErrors([]);
     setFormMode("edit");
   }
@@ -75,14 +70,11 @@ export function ClientsCrud({
   function closeForm() {
     setFormMode(null);
     setEditingId(null);
-    setStartEditingDogId(null);
     setErrors([]);
   }
 
-  function toggleClientDogs(clientId: number) {
-    setExpandedClientId((current) =>
-      current === clientId ? null : clientId,
-    );
+  function toggleTutorDogs(tutorId: number) {
+    setExpandedTutorId((current) => (current === tutorId ? null : tutorId));
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -92,35 +84,29 @@ export function ClientsCrud({
     startTransition(async () => {
       const result =
         formMode === "edit" && editingId !== null
-          ? await updateClientAction(editingId, formData)
-          : await createClientAction(formData);
+          ? await updateTutorAction(editingId, formData)
+          : await createTutorAction(formData);
 
       if (!result.success) {
         setErrors(result.errors);
         return;
       }
 
-      if (formMode === "create" && "clientId" in result) {
-        setFormMode("edit");
-        setEditingId(result.clientId);
-        setErrors([]);
-      } else {
-        closeForm();
-      }
+      closeForm();
       router.refresh();
     });
   }
 
-  function handleDelete(clientId: number) {
-    if (!confirm("Excluir este cliente?")) return;
+  function handleDelete(tutorId: number) {
+    if (!confirm("Excluir este tutor?")) return;
 
     startTransition(async () => {
-      const result = await deleteClientAction(clientId);
+      const result = await deleteTutorAction(tutorId);
       if (!result.success) {
         alert(result.errors.join("\n"));
         return;
       }
-      if (expandedClientId === clientId) setExpandedClientId(null);
+      if (expandedTutorId === tutorId) setExpandedTutorId(null);
       router.refresh();
     });
   }
@@ -138,25 +124,17 @@ export function ClientsCrud({
     });
   }
 
-  return (
-    <section className="w-full space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className={pageTitle}>Clientes</h1>
-          <p className={`mt-1 ${pageSubtitle}`}>
-            {clients.length} {clients.length === 1 ? "cliente" : "clientes"}
-          </p>
-        </div>
-        <button type="button" onClick={openCreate} className={btnPrimary}>
-          + Novo cliente
+  if (formMode) {
+    return (
+      <section className="w-full space-y-6">
+        <button type="button" onClick={closeForm} className={linkClass}>
+          ← Voltar à lista
         </button>
-      </header>
 
-      {formMode && (
         <div className={`${cardClass} p-6`}>
-          <h2 className="mb-4 text-lg font-semibold text-foreground">
-            {formMode === "create" ? "Novo cliente" : "Editar cliente"}
-          </h2>
+          <h1 className={`mb-4 ${pageTitle}`}>
+            {formMode === "create" ? "Novo tutor" : "Editar tutor"}
+          </h1>
 
           {errors.length > 0 && (
             <ul className="mb-4 list-inside list-disc rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -245,19 +223,24 @@ export function ClientsCrud({
               </button>
             </div>
           </form>
-
-          {formMode === "edit" && editingId !== null && (
-            <div className="mt-6">
-              <DogsCrud
-                clientId={editingId}
-                dogs={dogsByClient[editingId] ?? []}
-                itemsByDog={itemsByDog}
-                startEditingDogId={startEditingDogId}
-              />
-            </div>
-          )}
         </div>
-      )}
+      </section>
+    );
+  }
+
+  return (
+    <section className="w-full space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className={pageTitle}>Tutores</h1>
+          <p className={`mt-1 ${pageSubtitle}`}>
+            {tutors.length} {tutors.length === 1 ? "tutor" : "tutores"}
+          </p>
+        </div>
+        <button type="button" onClick={openCreate} className={btnPrimary}>
+          + Novo tutor
+        </button>
+      </header>
 
       <div className={`overflow-hidden ${cardClass}`}>
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
@@ -272,60 +255,60 @@ export function ClientsCrud({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {clients.length === 0 ? (
+            {tutors.length === 0 ? (
               <tr>
                 <td
                   colSpan={6}
                   className="px-4 py-12 text-center text-muted-foreground"
                 >
-                  Nenhum cliente. Clique em &quot;Novo cliente&quot;.
+                  Nenhum tutor. Clique em &quot;Novo tutor&quot;.
                 </td>
               </tr>
             ) : (
-              clients.map((client) => {
-                const dogs = dogsByClient[client.client_id] ?? [];
-                const expanded = expandedClientId === client.client_id;
+              tutors.map((tutor) => {
+                const dogs = dogsByTutor[tutor.tutor_id] ?? [];
+                const expanded = expandedTutorId === tutor.tutor_id;
 
                 return (
-                  <Fragment key={client.client_id}>
+                  <Fragment key={tutor.tutor_id}>
                     <tr className="transition-colors hover:bg-muted/50">
                       <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">
-                        {formatCpf(client.cpf)}
+                        {formatCpf(tutor.cpf)}
                       </td>
                       <td className="px-4 py-3 font-medium text-foreground">
-                        {client.name}
+                        {tutor.name}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {client.email}
+                        {tutor.email}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                        {formatMobile(client.mobile)}
+                        {formatMobile(tutor.mobile)}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
-                        {client.dogCount > 0 ? (
+                        {tutor.dogCount > 0 ? (
                           <button
                             type="button"
-                            onClick={() => toggleClientDogs(client.client_id)}
+                            onClick={() => toggleTutorDogs(tutor.tutor_id)}
                             aria-expanded={expanded}
                             className="font-medium text-foreground hover:underline"
                           >
-                            {client.dogCount}
+                            {tutor.dogCount}
                           </button>
                         ) : (
-                          client.dogCount
+                          tutor.dogCount
                         )}
                       </td>
                       <td className="whitespace-nowrap px-4 py-3 text-right">
                         <button
                           type="button"
-                          onClick={() => openEdit(client)}
+                          onClick={() => openEdit(tutor)}
                           className="mr-2 text-sm font-medium text-foreground hover:underline"
                         >
                           Editar
                         </button>
                         <button
                           type="button"
-                          onClick={() => handleDelete(client.client_id)}
+                          onClick={() => handleDelete(tutor.tutor_id)}
                           disabled={isPending}
                           className="text-sm font-medium text-destructive hover:underline disabled:opacity-50"
                         >
@@ -340,7 +323,9 @@ export function ClientsCrud({
                             dogs={dogs}
                             itemsByDog={itemsByDog}
                             isPending={isPending}
-                            onEdit={(dog) => openEdit(client, dog.dog_id)}
+                            onEdit={(dog) =>
+                              router.push(`/caes?dog=${dog.dog_id}`)
+                            }
                             onDelete={handleDeleteDog}
                           />
                         </td>

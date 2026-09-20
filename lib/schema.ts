@@ -30,15 +30,48 @@ export async function ensureUsersTable(pool: Pool) {
   `);
 }
 
-export async function ensureClientsTable(pool: Pool) {
+export async function ensureTutorsTable(pool: Pool) {
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS clients (
-      client_id SERIAL PRIMARY KEY,
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'clients'
+      ) AND NOT EXISTS (
+        SELECT 1 FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_name = 'tutors'
+      ) THEN
+        ALTER TABLE clients RENAME TO tutors;
+      END IF;
+    END $$
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tutors (
+      tutor_id SERIAL PRIMARY KEY,
       cpf TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       email TEXT NOT NULL,
       mobile TEXT NOT NULL
     )
+  `);
+
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'tutors' AND column_name = 'client_id'
+      ) THEN
+        ALTER TABLE tutors RENAME COLUMN client_id TO tutor_id;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1 FROM pg_class WHERE relname = 'clients_client_id_seq'
+      ) THEN
+        ALTER SEQUENCE clients_client_id_seq RENAME TO tutors_tutor_id_seq;
+      END IF;
+    END $$
   `);
 }
 
@@ -46,7 +79,7 @@ export async function ensureDogsTable(pool: Pool) {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS dogs (
       dog_id SERIAL PRIMARY KEY,
-      client_id INTEGER NOT NULL REFERENCES clients(client_id) ON DELETE CASCADE,
+      tutor_id INTEGER NOT NULL REFERENCES tutors(tutor_id) ON DELETE CASCADE,
       name TEXT NOT NULL,
       breed TEXT NOT NULL,
       size TEXT NOT NULL CHECK (size IN ('Small', 'Medium', 'Large')),
@@ -83,6 +116,13 @@ export async function ensureDogsTable(pool: Pool) {
         WHERE table_schema = 'public' AND table_name = 'dogs' AND column_name = 'data_cadastro'
       ) THEN
         ALTER TABLE dogs RENAME COLUMN data_cadastro TO registration_date;
+      END IF;
+
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'dogs' AND column_name = 'client_id'
+      ) THEN
+        ALTER TABLE dogs RENAME COLUMN client_id TO tutor_id;
       END IF;
     END $$
   `);
@@ -128,7 +168,47 @@ export async function ensureDogsTable(pool: Pool) {
   `);
 
   await pool.query(`
-    CREATE INDEX IF NOT EXISTS idx_dogs_client_id ON dogs (client_id)
+    DO $$
+    BEGIN
+      IF EXISTS (
+        SELECT 1 FROM pg_class WHERE relname = 'idx_dogs_client_id'
+      ) THEN
+        ALTER INDEX idx_dogs_client_id RENAME TO idx_dogs_tutor_id;
+      END IF;
+    END $$
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_dogs_tutor_id ON dogs (tutor_id)
+  `);
+
+  await pool.query(`
+    ALTER TABLE dogs ADD COLUMN IF NOT EXISTS photo BYTEA
+  `);
+
+  await pool.query(`
+    ALTER TABLE dogs ADD COLUMN IF NOT EXISTS photo_type TEXT
+  `);
+
+  await pool.query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'dogs_photo_type_check'
+      ) THEN
+        ALTER TABLE dogs
+        ADD CONSTRAINT dogs_photo_type_check
+        CHECK (photo_type IS NULL OR photo_type IN ('image/jpeg', 'image/png'));
+      END IF;
+
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'dogs_photo_pair_check'
+      ) THEN
+        ALTER TABLE dogs
+        ADD CONSTRAINT dogs_photo_pair_check
+        CHECK ((photo IS NULL) = (photo_type IS NULL));
+      END IF;
+    END $$
   `);
 }
 
@@ -153,7 +233,7 @@ export async function ensureSanitaryItensTable(pool: Pool) {
 
 export async function ensureSchema(pool: Pool) {
   await ensureUsersTable(pool);
-  await ensureClientsTable(pool);
+  await ensureTutorsTable(pool);
   await ensureDogsTable(pool);
   await ensureSanitaryItensTable(pool);
 }

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "KintalVax - Console",
-  description: "Login, usuários, clientes, cães e itens sanitários",
+  description: "Login, usuários, tutores, cães e itens sanitários",
 };
 
 export default function RootLayout({

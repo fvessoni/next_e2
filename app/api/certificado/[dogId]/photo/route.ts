@@ -1,0 +1,25 @@
+import { NextResponse } from "next/server";
+import { getDogPhoto } from "@/lib/dogs";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ dogId: string }> },
+) {
+  const dogId = Number((await params).dogId);
+  if (!Number.isInteger(dogId)) {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
+  const photo = await getDogPhoto(dogId);
+  if (!photo) {
+    return new NextResponse("Not found", { status: 404 });
+  }
+
+  const body = new Uint8Array(photo.bytes);
+  return new NextResponse(body, {
+    headers: {
+      "Content-Type": photo.type,
+      "Cache-Control": "public, max-age=60, must-revalidate",
+    },
+  });
+}

@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getClientById } from "@/lib/clients";
+import { parseDogPhoto } from "@/lib/dog-photo";
 import { createDog, deleteDog, getDogById, updateDog } from "@/lib/dogs";
 import { getSession } from "@/lib/session";
-import { DOG_SIZES, type DogSize } from "@/lib/types";
+import { getTutorById } from "@/lib/tutors";
+import { DOG_SIZES, type DogPhoto, type DogSize } from "@/lib/types";
 
 async function requireUser() {
   const session = await getSession();
@@ -38,20 +39,46 @@ function parseForm(formData: FormData) {
   };
 }
 
-export async function createDogAction(clientId: number, formData: FormData) {
+async function photoFromForm(
+  formData: FormData,
+  { allowRemove }: { allowRemove: boolean },
+): Promise<
+  | { ok: true; photo?: DogPhoto | null }
+  | { ok: false; errors: string[] }
+> {
+  if (allowRemove && String(formData.get("remove_photo") ?? "") === "1") {
+    return { ok: true, photo: null };
+  }
+  const parsed = await parseDogPhoto(formData.get("photo"));
+  if (!parsed.ok) return { ok: false, errors: [parsed.error] };
+  return { ok: true, photo: parsed.photo ?? undefined };
+}
+
+export async function createDogAction(formData: FormData) {
   const auth = await requireUser();
   if (!auth.ok) return { success: false as const, errors: auth.errors };
 
-  const client = await getClientById(clientId);
-  if (!client) {
-    return { success: false as const, errors: ["Cliente não encontrado."] };
+  const tutorId = Number(formData.get("tutor_id"));
+  const tutor = Number.isInteger(tutorId)
+    ? await getTutorById(tutorId)
+    : undefined;
+  if (!tutor) {
+    return { success: false as const, errors: ["Tutor não encontrado."] };
   }
 
   const parsed = parseForm(formData);
   if (!parsed.ok) return { success: false as const, errors: parsed.errors };
 
-  const dog = await createDog({ client_id: clientId, ...parsed.data });
-  revalidatePath("/clientes");
+  const photo = await photoFromForm(formData, { allowRemove: false });
+  if (!photo.ok) return { success: false as const, errors: photo.errors };
+
+  const dog = await createDog({
+    tutor_id: tutorId,
+    ...parsed.data,
+    photo: photo.photo ?? null,
+  });
+  revalidatePath("/caes");
+  revalidatePath("/tutores");
   return { success: true as const, dogId: dog.dog_id };
 }
 
@@ -62,12 +89,16 @@ export async function updateDogAction(dogId: number, formData: FormData) {
   const parsed = parseForm(formData);
   if (!parsed.ok) return { success: false as const, errors: parsed.errors };
 
-  const updated = await updateDog(dogId, parsed.data);
+  const photo = await photoFromForm(formData, { allowRemove: true });
+  if (!photo.ok) return { success: false as const, errors: photo.errors };
+
+  const updated = await updateDog(dogId, { ...parsed.data, photo: photo.photo });
   if (!updated) {
     return { success: false as const, errors: ["Cão não encontrado."] };
   }
 
-  revalidatePath("/clientes");
+  revalidatePath("/caes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }
 
@@ -88,6 +119,7 @@ export async function deleteDogAction(dogId: number) {
     };
   }
 
-  revalidatePath("/clientes");
+  revalidatePath("/caes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }

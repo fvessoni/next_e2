@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { digitsOnly, isValidCpf, isValidMobile } from "@/lib/br";
-import {
-  createClient,
-  deleteClient,
-  getClientByCpf,
-  getClientById,
-  updateClient,
-} from "@/lib/clients";
 import { getSession } from "@/lib/session";
+import {
+  createTutor,
+  deleteTutor,
+  getTutorByCpf,
+  getTutorById,
+  updateTutor,
+} from "@/lib/tutors";
 
 async function requireUser() {
   const session = await getSession();
@@ -45,16 +45,16 @@ function parseForm(formData: FormData) {
   };
 }
 
-async function cpfInUse(cpf: string, excludeClientId?: number) {
-  const existing = await getClientByCpf(cpf);
+async function cpfInUse(cpf: string, excludeTutorId?: number) {
+  const existing = await getTutorByCpf(cpf);
   if (!existing) return false;
-  if (excludeClientId !== undefined && existing.client_id === excludeClientId) {
+  if (excludeTutorId !== undefined && existing.tutor_id === excludeTutorId) {
     return false;
   }
   return true;
 }
 
-export async function createClientAction(formData: FormData) {
+export async function createTutorAction(formData: FormData) {
   const auth = await requireUser();
   if (!auth.ok) return { success: false as const, errors: auth.errors };
 
@@ -65,48 +65,48 @@ export async function createClientAction(formData: FormData) {
     return { success: false as const, errors: ["Este CPF já está cadastrado."] };
   }
 
-  const client = await createClient(parsed.data);
-  revalidatePath("/clientes");
-  return { success: true as const, clientId: client.client_id };
+  const tutor = await createTutor(parsed.data);
+  revalidatePath("/tutores");
+  return { success: true as const, tutorId: tutor.tutor_id };
 }
 
-export async function updateClientAction(clientId: number, formData: FormData) {
+export async function updateTutorAction(tutorId: number, formData: FormData) {
   const auth = await requireUser();
   if (!auth.ok) return { success: false as const, errors: auth.errors };
 
   const parsed = parseForm(formData);
   if (!parsed.ok) return { success: false as const, errors: parsed.errors };
 
-  if (await cpfInUse(parsed.data.cpf, clientId)) {
+  if (await cpfInUse(parsed.data.cpf, tutorId)) {
     return { success: false as const, errors: ["Este CPF já está cadastrado."] };
   }
 
-  const updated = await updateClient(clientId, parsed.data);
+  const updated = await updateTutor(tutorId, parsed.data);
   if (!updated) {
-    return { success: false as const, errors: ["Cliente não encontrado."] };
+    return { success: false as const, errors: ["Tutor não encontrado."] };
   }
 
-  revalidatePath("/clientes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }
 
-export async function deleteClientAction(clientId: number) {
+export async function deleteTutorAction(tutorId: number) {
   const auth = await requireUser();
   if (!auth.ok) return { success: false as const, errors: auth.errors };
 
-  const client = await getClientById(clientId);
-  if (!client) {
-    return { success: false as const, errors: ["Cliente não encontrado."] };
+  const tutor = await getTutorById(tutorId);
+  if (!tutor) {
+    return { success: false as const, errors: ["Tutor não encontrado."] };
   }
 
-  const deleted = await deleteClient(clientId);
+  const deleted = await deleteTutor(tutorId);
   if (!deleted) {
     return {
       success: false as const,
-      errors: ["Não foi possível excluir o cliente."],
+      errors: ["Não foi possível excluir o tutor."],
     };
   }
 
-  revalidatePath("/clientes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }

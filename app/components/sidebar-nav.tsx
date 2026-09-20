@@ -123,7 +123,10 @@ const platformGroups: NavGroup[] = [
     id: "cadastro",
     label: "Cadastro",
     icon: <UsersIcon />,
-    items: [{ name: "Clientes", href: "/clientes" }],
+    items: [
+      { name: "Tutores", href: "/tutores" },
+      { name: "Cães", href: "/caes" },
+    ],
   },
   {
     id: "admin",

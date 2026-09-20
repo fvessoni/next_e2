@@ -16,15 +16,15 @@ export interface CreateUserInput {
   user_type: UserType;
 }
 
-export interface Client {
-  client_id: number;
+export interface Tutor {
+  tutor_id: number;
   cpf: string;
   name: string;
   email: string;
   mobile: string;
 }
 
-export interface CreateClientInput {
+export interface CreateTutorInput {
   cpf: string;
   name: string;
   email: string;
@@ -43,22 +43,31 @@ export const DOG_SIZE_LABELS: Record<DogSize, string> = {
 
 export interface Dog {
   dog_id: number;
-  client_id: number;
+  tutor_id: number;
   name: string;
   breed: string;
   size: DogSize;
   registration_date: string;
+  has_photo: boolean;
 }
 
 export interface CreateDogInput {
-  client_id: number;
+  tutor_id: number;
   name: string;
   breed: string;
   size: DogSize;
   registration_date: string;
+  photo?: DogPhoto | null;
 }
 
-export interface ClientListRow extends Client {
+export type DogPhotoType = "image/jpeg" | "image/png";
+
+export interface DogPhoto {
+  bytes: Buffer;
+  type: DogPhotoType;
+}
+
+export interface TutorListRow extends Tutor {
   dogCount: number;
 }
 

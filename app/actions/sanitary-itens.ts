@@ -64,7 +64,8 @@ export async function createSanitaryItemAction(
   if (!parsed.ok) return { success: false as const, errors: parsed.errors };
 
   await createSanitaryItem({ dog_id: dogId, ...parsed.data });
-  revalidatePath("/clientes");
+  revalidatePath("/caes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }
 
@@ -83,7 +84,8 @@ export async function updateSanitaryItemAction(
     return { success: false as const, errors: ["Item sanitário não encontrado."] };
   }
 
-  revalidatePath("/clientes");
+  revalidatePath("/caes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }
 
@@ -104,6 +106,7 @@ export async function deleteSanitaryItemAction(sanitaryItemId: number) {
     };
   }
 
-  revalidatePath("/clientes");
+  revalidatePath("/caes");
+  revalidatePath("/tutores");
   return { success: true as const };
 }
