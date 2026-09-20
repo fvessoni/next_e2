@@ -1,5 +1,7 @@
+import { AddToGoogleWalletButton } from "@/app/components/add-to-google-wallet-button";
 import { CertificatePrintButton } from "@/app/components/certificate-print-button";
 import { APP_NAME, BrandMark } from "@/app/components/brand-logo";
+import { isGoogleWalletConfigured } from "@/lib/google-wallet";
 import { formatCpf, formatMobile } from "@/lib/br";
 import {
   certificatePath,
@@ -75,11 +77,15 @@ export default async function VaccinationCertificatePage({
   const today = todayIsoDate();
   const publicUrl = await getCertificateUrl(dog.dog_id);
   const qrSvg = await certificateQrSvg(publicUrl);
+  const showWalletButton = isGoogleWalletConfigured();
 
   return (
     <main className="min-h-screen bg-muted/50 px-4 py-8 print:bg-white print:px-0 print:py-0">
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-end gap-3 print:hidden">
+          {showWalletButton ? (
+            <AddToGoogleWalletButton dogId={dog.dog_id} />
+          ) : null}
           <CertificatePrintButton />
         </div>
 

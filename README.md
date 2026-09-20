@@ -12,8 +12,10 @@ Set these environment variables in the Vercel project (`production`, `preview`, 
 - `DATABASE_URL_UNPOOLED` — Neon direct connection
 - `AUTH_SECRET`
 - `POSTGRES_URL` / `POSTGRES_URL_NON_POOLING` — same Neon URLs (optional aliases)
+- `GOOGLE_WALLET_ISSUER_ID` — issuer ID from the Google Pay & Wallet console
+- `GOOGLE_WALLET_CREDENTIALS` — service-account JSON as a single line, or drop `google-wallet.json` in the project root (gitignored)
 
-Public certificate pages live at `/certificado/{dogId}` and do not require login.
+Public certificate pages live at `/certificado/{dogId}` and do not require login. Until Google grants publishing access, Wallet passes show `[TEST ONLY]` and only test users can save them.
 
 ## Requirements
 
