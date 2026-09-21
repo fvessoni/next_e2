@@ -13,7 +13,7 @@ import {
   PASSPORT_BACKGROUND,
   PASSPORT_SUBTITLE,
   PASSPORT_TITLE,
-  TELECONSULT_BUTTON_LABEL,
+  WALLET_BUTTON_DISPLAY,
   TELECONSULT_URL,
   passportOverview,
   passportStatusLine,
@@ -230,7 +230,7 @@ function buildGenericObject(
     overview.next?.item ?? "",
     overview.next?.valid_to ?? "",
     String(items.length),
-    "heroid",
+    "alertred",
   ].join("-");
   const started = earliestApplied(items);
   const statusLine = passportStatusLine(items, today);
@@ -305,7 +305,7 @@ function buildGenericObject(
           },
         },
       },
-      displayText: loc(TELECONSULT_BUTTON_LABEL),
+      displayText: loc(WALLET_BUTTON_DISPLAY),
     },
   };
 

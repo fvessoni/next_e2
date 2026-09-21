@@ -74,7 +74,7 @@
       "id": "{issuerId}.dog-{dogId}",
       "classId": "{issuerId}.kintalvax_certificate",
       "genericType": "GENERIC_OTHER",
-      "hexBackgroundColor": "#000000",
+      "hexBackgroundColor": "#1a1a1a",
       "state": "ACTIVE",
       "cardTitle": {
         "defaultValue": {
@@ -118,7 +118,7 @@
         {
           "id": "vacinas",
           "header": "Vacinas",
-          "body": "V10 — 21/09/2027 · Válida\nGiárdia — 01/10/2024 · Vencendo"
+          "body": "V10 — 21/09/2027 · Válida\nGiárdia — 01/10/2024 · Vencida\nAntirrábica — 30/09/2026 · Vencendo"
         }
       ],
       "linksModuleData": {
@@ -148,7 +148,7 @@
         "displayText": {
           "defaultValue": {
             "language": "pt-BR",
-            "value": "Clique aqui para agendar uma tele-consulta com o veterinário"
+            "value": "Tele-consulta veterinária"
           }
         }
       }

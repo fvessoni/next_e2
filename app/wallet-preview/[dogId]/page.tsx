@@ -46,7 +46,7 @@ export default async function WalletPreviewPage({
           ? `${overview.next.item} — ${formatDate(overview.next.valid_to)}`
           : "Nenhum item sanitário"
       }
-      heroUrl={`/api/certificado/${dog.dog_id}/pass?v=heroid`}
+      heroUrl={`/api/certificado/${dog.dog_id}/pass?v=alertred`}
       certificateUrl={`/certificado/${dog.dog_id}`}
       videocallUrl="/videocall"
       vaccines={vaccines}
