@@ -7,16 +7,26 @@ import {
   getPublicOrigin,
   getVaccinationCertificate,
 } from "@/lib/certificate";
-import { formatDate, isSanitaryItemCurrent, todayIsoDate } from "@/lib/format";
-import { DOG_SIZE_LABELS } from "@/lib/types";
+import { formatDate, todayIsoDate } from "@/lib/format";
+import {
+  PASSPORT_SUBTITLE,
+  PASSPORT_TITLE,
+  TELECONSULT_URL,
+  passportAppliedLabel,
+  passportDueLabel,
+  passportNextDoseLabel,
+  passportOverview,
+  sanitaryItemStatusLabel,
+  sanitaryItemStatus,
+} from "@/lib/passport";
 import type { Dog, SanitaryItem, Tutor } from "@/lib/types";
 
 const CLASS_SUFFIX = "kintalvax_certificate";
-const PASS_TITLE = "KintalVax";
 const WALLET_SCOPE = "https://www.googleapis.com/auth/wallet_object.issuer";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const WALLET_API = "https://walletobjects.googleapis.com/walletobjects/v1";
 const PRODUCTION_ORIGIN = "https://next-e2.vercel.app";
+const PASS_BACKGROUND = "#3A2C24";
 
 type WalletCredentials = {
   issuerId: string;
@@ -144,24 +154,18 @@ function nextExpiry(items: SanitaryItem[]) {
     .valid_to;
 }
 
-function sanitaryModules(items: SanitaryItem[], today: string) {
-  if (items.length === 0) {
-    return [
-      {
-        id: "sanitary",
-        header: "Sanitário",
-        body: "Nenhum item sanitário",
-      },
-    ];
-  }
-  return items.slice(0, 6).map((item) => ({
-    id: `sanitary-${item.sanitary_item_id}`,
-    header: clip(item.item, 40),
-    body: clip(
-      `${isSanitaryItemCurrent(item, today) ? "Vigente" : "Vencido"} até ${formatDate(item.valid_to)}`,
-      60,
-    ),
-  }));
+function sanitaryModules(items: SanitaryItem[], today: string, skipId?: number) {
+  return items
+    .filter((item) => item.sanitary_item_id !== skipId)
+    .slice(0, 6)
+    .map((item) => ({
+      id: `sanitary-${item.sanitary_item_id}`,
+      header: clip(item.item, 40),
+      body: clip(
+        `${sanitaryItemStatusLabel(sanitaryItemStatus(item, today))} até ${formatDate(item.valid_to)}`,
+        60,
+      ),
+    }));
 }
 
 function buildGenericObject(
@@ -173,36 +177,46 @@ function buildGenericObject(
 ): GenericPass {
   const today = todayIsoDate();
   const expiry = nextExpiry(items);
-  const validityLabel = expiry
-    ? items.every((item) => isSanitaryItemCurrent(item, today))
-      ? formatDate(expiry)
-      : `Vencido · ${formatDate(expiry)}`
-    : "Sem itens";
+  const overview = passportOverview(items, today);
 
   const object: GenericPass = {
     id: objectIdFor(issuerId, dog.dog_id),
     classId: classIdFor(issuerId),
     genericType: "GENERIC_OTHER",
-    hexBackgroundColor: "#171717",
+    hexBackgroundColor: PASS_BACKGROUND,
     state: "ACTIVE",
     notifyPreference: "NOTIFY_ON_UPDATE",
-    cardTitle: loc(PASS_TITLE),
+    cardTitle: loc(PASSPORT_TITLE),
     header: loc(clip(dog.name, 40)),
-    subheader: loc("Certificado de vacinação"),
+    subheader: loc(PASSPORT_SUBTITLE),
     barcode: {
       type: "QR_CODE",
       value: certificateUrl,
       alternateText: certificateUrl,
     },
     textModulesData: [
+      {
+        id: "status",
+        header: "Passaporte",
+        body: clip(overview.statusLabel, 40),
+      },
       { id: "tutor", header: "Tutor", body: clip(tutor.name, 40) },
       {
-        id: "dog",
-        header: "Cão",
-        body: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 60),
+        id: "next",
+        header: "Próxima dose",
+        body: clip(passportNextDoseLabel(overview.next), 40),
       },
-      { id: "validade", header: "Validade", body: clip(validityLabel, 40) },
-      ...sanitaryModules(items, today),
+      {
+        id: "applied",
+        header: "Aplicada em",
+        body: passportAppliedLabel(overview.next),
+      },
+      {
+        id: "due",
+        header: "Validade",
+        body: passportDueLabel(overview.next),
+      },
+      ...sanitaryModules(items, today, overview.next?.sanitary_item_id),
     ],
     linksModuleData: {
       uris: [
@@ -211,6 +225,12 @@ function buildGenericObject(
           uri: certificateUrl,
           description: certificateUrl,
           localizedDescription: loc("Abrir certificado na web"),
+        },
+        {
+          id: "teleconsult",
+          uri: TELECONSULT_URL,
+          description: TELECONSULT_URL,
+          localizedDescription: loc("Agende sua tele-consulta"),
         },
       ],
     },
