@@ -2,12 +2,12 @@
 
 import { btnOutline } from "@/lib/ui";
 
-export function CertificatePrintButton() {
+export function CertificatePrintButton({ className }: { className?: string }) {
   return (
     <button
       type="button"
       onClick={() => window.print()}
-      className={`${btnOutline} print:hidden`}
+      className={className ?? `${btnOutline} print:hidden`}
     >
       Imprimir
     </button>
