@@ -1,7 +1,13 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { importPKCS8, SignJWT } from "jose";
-import { getCertificateUrl, getPublicOrigin, getVaccinationCertificate } from "@/lib/certificate";
+import { after } from "next/server";
+import {
+  certificatePath,
+  getCertificateUrl,
+  getPublicOrigin,
+  getVaccinationCertificate,
+} from "@/lib/certificate";
 import { formatDate, isSanitaryItemCurrent, todayIsoDate } from "@/lib/format";
 import { DOG_SIZE_LABELS } from "@/lib/types";
 import type { Dog, SanitaryItem, Tutor } from "@/lib/types";
@@ -359,17 +365,41 @@ function walletOrigins(currentOrigin: string) {
   return [...new Set([currentOrigin, PRODUCTION_ORIGIN])];
 }
 
-export async function createGoogleWalletSaveUrl(
-  dogId: number,
-): Promise<string | null> {
+async function passCertificateUrl(dogId: number) {
+  try {
+    const origin = await getPublicOrigin();
+    if (!origin.includes("localhost")) {
+      return `${origin}${certificatePath(dogId)}`;
+    }
+  } catch {
+    // No request scope (or headers unavailable).
+  }
+  return `${PRODUCTION_ORIGIN}${certificatePath(dogId)}`;
+}
+
+async function walletObjectExists(token: string, objectId: string) {
+  const encodedId = encodeURIComponent(objectId);
+  const get = await walletFetch(
+    token,
+    "GET",
+    `${WALLET_API}/genericObject/${encodedId}`,
+  );
+  if (get.response.status === 404) return false;
+  if (!get.response.ok) {
+    throw new Error(
+      `Wallet object lookup failed (${get.response.status}): ${get.text}`,
+    );
+  }
+  return true;
+}
+
+async function writeWalletPass(dogId: number, certificateUrl: string) {
   const credentials = getGoogleWalletCredentials();
   if (!credentials) return null;
 
   const certificate = await getVaccinationCertificate(dogId);
   if (!certificate) return null;
 
-  const origin = await getPublicOrigin();
-  const certificateUrl = await getCertificateUrl(dogId);
   const object = buildGenericObject(
     credentials.issuerId,
     certificate.dog,
@@ -377,19 +407,93 @@ export async function createGoogleWalletSaveUrl(
     certificate.items,
     certificateUrl,
   );
-
   const token = await getAccessToken(credentials);
   await ensureClass(token, credentials.issuerId);
   await upsertObject(token, object);
+  return { credentials, object };
+}
 
-  const key = await signingKey(credentials.privateKey);
+export async function syncGoogleWalletPass(dogId: number) {
+  const credentials = getGoogleWalletCredentials();
+  if (!credentials) return;
+
+  try {
+    const token = await getAccessToken(credentials);
+    const objectId = objectIdFor(credentials.issuerId, dogId);
+    if (!(await walletObjectExists(token, objectId))) return;
+    await writeWalletPass(dogId, await passCertificateUrl(dogId));
+  } catch (error) {
+    console.error("Google Wallet sync failed", dogId, error);
+  }
+}
+
+export async function expireGoogleWalletPass(dogId: number) {
+  const credentials = getGoogleWalletCredentials();
+  if (!credentials) return;
+
+  try {
+    const token = await getAccessToken(credentials);
+    const objectId = objectIdFor(credentials.issuerId, dogId);
+    if (!(await walletObjectExists(token, objectId))) return;
+    const encodedId = encodeURIComponent(objectId);
+    const patch = await walletFetch(
+      token,
+      "PATCH",
+      `${WALLET_API}/genericObject/${encodedId}`,
+      { state: "EXPIRED" },
+    );
+    if (!patch.response.ok) {
+      throw new Error(
+        `Wallet object expire failed (${patch.response.status}): ${patch.text}`,
+      );
+    }
+  } catch (error) {
+    console.error("Google Wallet expire failed", dogId, error);
+  }
+}
+
+export function scheduleGoogleWalletSync(dogId: number) {
+  after(() => {
+    void syncGoogleWalletPass(dogId);
+  });
+}
+
+export function scheduleGoogleWalletSyncForDogs(dogIds: number[]) {
+  if (dogIds.length === 0) return;
+  after(async () => {
+    await Promise.all(dogIds.map((id) => syncGoogleWalletPass(id)));
+  });
+}
+
+export function scheduleGoogleWalletExpire(dogId: number) {
+  after(() => {
+    void expireGoogleWalletPass(dogId);
+  });
+}
+
+export function scheduleGoogleWalletExpireForDogs(dogIds: number[]) {
+  if (dogIds.length === 0) return;
+  after(async () => {
+    await Promise.all(dogIds.map((id) => expireGoogleWalletPass(id)));
+  });
+}
+
+export async function createGoogleWalletSaveUrl(
+  dogId: number,
+): Promise<string | null> {
+  const origin = await getPublicOrigin();
+  const certificateUrl = await getCertificateUrl(dogId);
+  const written = await writeWalletPass(dogId, certificateUrl);
+  if (!written) return null;
+
+  const key = await signingKey(written.credentials.privateKey);
   const jwt = await new SignJWT({
-    iss: credentials.clientEmail,
+    iss: written.credentials.clientEmail,
     aud: "google",
     typ: "savetowallet",
     origins: walletOrigins(origin),
     payload: {
-      genericObjects: [{ id: object.id }],
+      genericObjects: [{ id: written.object.id }],
     },
   })
     .setProtectedHeader({ alg: "RS256" })

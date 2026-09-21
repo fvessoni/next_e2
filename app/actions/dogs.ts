@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { parseDogPhoto } from "@/lib/dog-photo";
 import { createDog, deleteDog, getDogById, updateDog } from "@/lib/dogs";
+import {
+  scheduleGoogleWalletExpire,
+  scheduleGoogleWalletSync,
+} from "@/lib/google-wallet";
 import { getSession } from "@/lib/session";
 import { getTutorById } from "@/lib/tutors";
 import { DOG_SIZES, type DogPhoto, type DogSize } from "@/lib/types";
@@ -99,6 +103,7 @@ export async function updateDogAction(dogId: number, formData: FormData) {
 
   revalidatePath("/caes");
   revalidatePath("/tutores");
+  scheduleGoogleWalletSync(updated.dog_id);
   return { success: true as const };
 }
 
@@ -121,5 +126,6 @@ export async function deleteDogAction(dogId: number) {
 
   revalidatePath("/caes");
   revalidatePath("/tutores");
+  scheduleGoogleWalletExpire(dogId);
   return { success: true as const };
 }

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getDogById } from "@/lib/dogs";
+import { scheduleGoogleWalletSync } from "@/lib/google-wallet";
 import {
   createSanitaryItem,
   deleteSanitaryItem,
@@ -66,6 +67,7 @@ export async function createSanitaryItemAction(
   await createSanitaryItem({ dog_id: dogId, ...parsed.data });
   revalidatePath("/caes");
   revalidatePath("/tutores");
+  scheduleGoogleWalletSync(dogId);
   return { success: true as const };
 }
 
@@ -86,6 +88,7 @@ export async function updateSanitaryItemAction(
 
   revalidatePath("/caes");
   revalidatePath("/tutores");
+  scheduleGoogleWalletSync(updated.dog_id);
   return { success: true as const };
 }
 
@@ -108,5 +111,6 @@ export async function deleteSanitaryItemAction(sanitaryItemId: number) {
 
   revalidatePath("/caes");
   revalidatePath("/tutores");
+  scheduleGoogleWalletSync(item.dog_id);
   return { success: true as const };
 }

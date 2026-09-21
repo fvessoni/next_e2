@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { digitsOnly, isValidCpf, isValidMobile } from "@/lib/br";
+import { getDogsByTutorId } from "@/lib/dogs";
+import {
+  scheduleGoogleWalletExpireForDogs,
+  scheduleGoogleWalletSyncForDogs,
+} from "@/lib/google-wallet";
 import { getSession } from "@/lib/session";
 import {
   createTutor,
@@ -86,7 +91,9 @@ export async function updateTutorAction(tutorId: number, formData: FormData) {
     return { success: false as const, errors: ["Tutor não encontrado."] };
   }
 
+  const dogs = await getDogsByTutorId(tutorId);
   revalidatePath("/tutores");
+  scheduleGoogleWalletSyncForDogs(dogs.map((dog) => dog.dog_id));
   return { success: true as const };
 }
 
@@ -99,6 +106,7 @@ export async function deleteTutorAction(tutorId: number) {
     return { success: false as const, errors: ["Tutor não encontrado."] };
   }
 
+  const dogs = await getDogsByTutorId(tutorId);
   const deleted = await deleteTutor(tutorId);
   if (!deleted) {
     return {
@@ -108,5 +116,6 @@ export async function deleteTutorAction(tutorId: number) {
   }
 
   revalidatePath("/tutores");
+  scheduleGoogleWalletExpireForDogs(dogs.map((dog) => dog.dog_id));
   return { success: true as const };
 }
