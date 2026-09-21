@@ -88,6 +88,12 @@
           "value": "Thor"
         }
       },
+      "subheader": {
+        "defaultValue": {
+          "language": "pt-BR",
+          "value": "Em dia"
+        }
+      },
       "logo": {
         "sourceUri": {
           "uri": "https://next-e2.vercel.app/kintal-logo.png?v=black"

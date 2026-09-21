@@ -230,7 +230,7 @@ function buildGenericObject(
     overview.next?.item ?? "",
     overview.next?.valid_to ?? "",
     String(items.length),
-    "goldstatus",
+    "heroid",
   ].join("-");
   const started = earliestApplied(items);
   const statusLine = passportStatusLine(items, today);
@@ -244,6 +244,7 @@ function buildGenericObject(
     notifyPreference: "NOTIFY_ON_UPDATE",
     cardTitle: loc(PASSPORT_TITLE),
     header: loc(clip(dog.name, 40)),
+    subheader: loc(clip(statusLine, 40)),
     logo: {
       sourceUri: {
         uri: walletAssetUrl(PASSPORT_LOGO_PATH, "black"),
