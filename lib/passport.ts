@@ -4,7 +4,7 @@ import type { SanitaryItem } from "@/lib/types";
 export const PASSPORT_TITLE = "Kintal Vax";
 export const PASSPORT_SUBTITLE = "Passaporte de Vacinação";
 export const TELECONSULT_URL = "https://kintalcoffedog.com.br";
-export const PASSPORT_LOGO_PATH = "/api/certificado/wallet-logo";
+export const PASSPORT_LOGO_PATH = "/kintal-logo.png";
 
 function daysUntil(isoDate: string, today: string) {
   const [y1, m1, d1] = today.split("-").map(Number);

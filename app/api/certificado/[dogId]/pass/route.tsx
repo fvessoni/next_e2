@@ -55,7 +55,7 @@ export async function GET(
         >
           <img
             src={logoSrc}
-            width={34}
+            width={56}
             height={56}
           />
           <div
