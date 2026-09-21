@@ -1,15 +1,32 @@
-import { readFileSync } from "fs";
-import path from "path";
-import { NextResponse } from "next/server";
+import { ImageResponse } from "next/og";
+import { kintalLogoDataUrl } from "@/lib/kintal-logo";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  const file = readFileSync(path.join(process.cwd(), "public/kintal-logo.png"));
-  return new NextResponse(new Uint8Array(file), {
-    headers: {
-      "Content-Type": "image/png",
-      "Cache-Control": "public, max-age=86400, immutable",
+export async function GET() {
+  const logoSrc = kintalLogoDataUrl();
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          width: "660px",
+          height: "660px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#3A2C24",
+        }}
+      >
+        <img src={logoSrc} width={280} height={455} />
+      </div>
+    ),
+    {
+      width: 660,
+      height: 660,
+      headers: {
+        "Cache-Control": "public, max-age=86400",
+      },
     },
-  });
+  );
 }

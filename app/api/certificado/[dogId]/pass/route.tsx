@@ -1,7 +1,6 @@
-import { readFileSync } from "fs";
-import path from "path";
 import { ImageResponse } from "next/og";
 import { getVaccinationCertificate } from "@/lib/certificate";
+import { kintalLogoDataUrl } from "@/lib/kintal-logo";
 import { DOG_SIZE_LABELS } from "@/lib/types";
 import {
   PASSPORT_SUBTITLE,
@@ -15,15 +14,6 @@ import { todayIsoDate } from "@/lib/format";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function kintalLogoSrc() {
-  const file = readFileSync(
-    path.join(process.cwd(), "public/kintal-logo.png"),
-  );
-  const copy = new Uint8Array(file.byteLength);
-  copy.set(file);
-  return copy.buffer;
-}
 
 export async function GET(
   _request: Request,
@@ -41,7 +31,7 @@ export async function GET(
 
   const { dog, tutor, items } = certificate;
   const overview = passportOverview(items, todayIsoDate());
-  const logoSrc = kintalLogoSrc();
+  const logoSrc = kintalLogoDataUrl();
 
   return new ImageResponse(
     (
@@ -250,6 +240,6 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: 1032, height: 336 },
+    { width: 1032, height: 336, headers: { "Cache-Control": "public, max-age=300" } },
   );
 }

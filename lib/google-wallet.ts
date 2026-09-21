@@ -233,7 +233,7 @@ function buildGenericObject(
     subheader: loc(PASSPORT_SUBTITLE),
     logo: {
       sourceUri: {
-        uri: walletAssetUrl(PASSPORT_LOGO_PATH, "png"),
+        uri: walletAssetUrl(PASSPORT_LOGO_PATH, "llama"),
       },
       contentDescription: loc(PASSPORT_TITLE),
     },
@@ -427,7 +427,14 @@ async function ensureClass(token: string, issuerId: string) {
   return id;
 }
 
-async function upsertObject(token: string, object: GenericPass) {
+function isUnreadableWalletImage(message: string) {
+  return (
+    message.includes("Image cannot be loaded") ||
+    message.includes("Invalid image URL")
+  );
+}
+
+async function putOrInsertObject(token: string, object: GenericPass) {
   const encodedId = encodeURIComponent(object.id);
   const get = await walletFetch(
     token,
@@ -465,6 +472,33 @@ async function upsertObject(token: string, object: GenericPass) {
       `Wallet object update failed (${update.response.status}): ${update.text}`,
     );
   }
+}
+
+async function upsertObject(token: string, object: GenericPass) {
+  try {
+    await putOrInsertObject(token, object);
+    return;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!isUnreadableWalletImage(message)) throw error;
+    console.error("Wallet image rejected, retrying without hero", object.id);
+  }
+
+  const withoutHero: GenericPass = { ...object };
+  delete withoutHero.heroImage;
+  try {
+    await putOrInsertObject(token, withoutHero);
+    return;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!isUnreadableWalletImage(message)) throw error;
+    console.error("Wallet image rejected, retrying without logo", object.id);
+  }
+
+  const withoutImages: GenericPass = { ...object };
+  delete withoutImages.heroImage;
+  delete withoutImages.logo;
+  await putOrInsertObject(token, withoutImages);
 }
 
 function walletOrigins(currentOrigin: string) {
@@ -592,12 +626,6 @@ export async function createGoogleWalletSaveUrl(
     typ: "savetowallet",
     origins: walletOrigins(origin),
     payload: {
-      genericClasses: [
-        {
-          id: written.object.classId,
-          classTemplateInfo: classTemplateInfo(),
-        },
-      ],
       genericObjects: [{ id: written.object.id }],
     },
   })
