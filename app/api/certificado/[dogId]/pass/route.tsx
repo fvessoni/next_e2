@@ -41,7 +41,7 @@ export async function GET(
           height: "336px",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#F9F7F1",
+          backgroundColor: "#000000",
           fontFamily: "Arial, sans-serif",
         }}
       >
@@ -109,7 +109,7 @@ export async function GET(
               display: "flex",
               fontSize: 48,
               fontWeight: 800,
-              color: "#3A2C24",
+              color: "#FFFFFF",
               lineHeight: 1,
             }}
           >
@@ -118,11 +118,11 @@ export async function GET(
           <div
             style={{
               display: "flex",
-              fontSize: 16,
-              fontWeight: 800,
+              fontSize: 22,
+              fontWeight: 900,
               letterSpacing: 1,
               textTransform: "uppercase",
-              padding: "8px 16px",
+              padding: "10px 20px",
               borderRadius: 24,
               backgroundColor: overview.allGood ? "#E8F5E9" : "#FFF3E0",
               color: overview.allGood ? "#2E7D32" : "#E65100",
@@ -137,7 +137,7 @@ export async function GET(
             display: "flex",
             marginTop: 8,
             fontSize: 18,
-            color: "#8C7B70",
+            color: "#C4B8AE",
           }}
         >
           {dog.breed} · {DOG_SIZE_LABELS[dog.size]} · Tutor {tutor.name}
@@ -145,10 +145,11 @@ export async function GET(
         <div
           style={{
             display: "flex",
-            marginTop: 28,
-            fontSize: 22,
-            fontWeight: 700,
-            color: overview.allGood ? "#2E7D32" : "#E65100",
+            marginTop: 16,
+            fontSize: 48,
+            fontWeight: 900,
+            letterSpacing: 0.4,
+            color: "#F2B705",
           }}
         >
           {statusLine}

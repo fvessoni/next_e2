@@ -1,3 +1,5 @@
+import { TELECONSULT_BUTTON_LABEL } from "@/lib/passport";
+
 type Vaccine = { name: string; detail: string };
 
 export function WalletPreviewCard({
@@ -25,7 +27,7 @@ export function WalletPreviewCard({
             Prévia da Carteira do Google
           </p>
           <p className="mt-2 text-xs text-white/45">
-            Um botão nativo só: Tele-consulta. O certificado fica como link.
+            Um botão nativo só. O certificado fica como link.
             A Carteira ainda desenha uma faixa compacta com o nome do cão —
             isso não dá para ocultar.
           </p>
@@ -46,7 +48,9 @@ export function WalletPreviewCard({
             />
             <div className="min-w-0">
               <p className="truncate text-base font-semibold">{dogName}</p>
-              <p className="truncate text-sm text-[#F2B705]">{statusLine}</p>
+              <p className="truncate text-lg font-extrabold text-[#F2B705]">
+                {statusLine}
+              </p>
             </div>
           </div>
         </section>
@@ -57,7 +61,7 @@ export function WalletPreviewCard({
           </h2>
           <article className="overflow-hidden rounded-3xl bg-black shadow-2xl">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={heroUrl} alt="" className="h-auto w-full bg-[#F9F7F1]" />
+            <img src={heroUrl} alt="" className="h-auto w-full bg-black" />
             <div className="px-5 pb-6 pt-4">
               <div>
                 <p className="text-xs uppercase tracking-wide text-white/50">
@@ -65,22 +69,6 @@ export function WalletPreviewCard({
                 </p>
                 <p className="mt-1 text-base font-medium">{nextDose}</p>
               </div>
-
-              <div className="mt-5">
-                <p className="text-xs uppercase tracking-wide text-[#F2B705]">
-                  Tele-consulta
-                </p>
-                <p className="mt-1 text-sm text-white/80">
-                  Falar com o veterinário agora
-                </p>
-              </div>
-
-              <a
-                href={videocallUrl}
-                className="mt-5 flex h-11 items-center justify-center rounded-full bg-[#F2B705] text-sm font-semibold text-black"
-              >
-                Tele-consulta
-              </a>
 
               <div className="mt-6 border-t border-white/10 pt-4">
                 {vaccines.length === 0 ? (
@@ -95,13 +83,21 @@ export function WalletPreviewCard({
                     ))}
                   </ul>
                 )}
-                <a
-                  href={certificateUrl}
-                  className="mt-5 inline-block text-sm text-[#8ab4f8] underline"
-                >
-                  Ver certificado
-                </a>
               </div>
+
+              <a
+                href={videocallUrl}
+                className="mt-5 flex min-h-11 items-center justify-center rounded-full bg-[#F2B705] px-4 py-3 text-center text-sm font-semibold leading-snug text-black"
+              >
+                {TELECONSULT_BUTTON_LABEL}
+              </a>
+
+              <a
+                href={certificateUrl}
+                className="mt-4 inline-block text-sm text-[#8ab4f8] underline"
+              >
+                Ver certificado
+              </a>
             </div>
           </article>
         </section>

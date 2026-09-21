@@ -24,7 +24,7 @@
                   "firstValue": {
                     "fields": [
                       {
-                        "fieldPath": "object.textModulesData['teleconsulta']"
+                        "fieldPath": "object.textModulesData['vacinas']"
                       }
                     ]
                   }
@@ -53,105 +53,6 @@
         },
         "detailsTemplateOverride": {
           "detailsItemInfos": [
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacinas']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_1']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_2']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_3']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_4']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_5']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_6']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_7']"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['vacina_8']"
-                    }
-                  ]
-                }
-              }
-            },
             {
               "item": {
                 "firstValue": {
@@ -209,19 +110,9 @@
           "body": "Antirrábica — 15/10/2024"
         },
         {
-          "id": "teleconsulta",
-          "header": "Tele-consulta",
-          "body": "Clique para agendar uma tele-consulta com o veterinário"
-        },
-        {
-          "id": "vacina_1",
-          "header": "V10",
-          "body": "21/09/2027 · Válida"
-        },
-        {
-          "id": "vacina_2",
-          "header": "Giárdia",
-          "body": "01/10/2024 · Vencendo"
+          "id": "vacinas",
+          "header": "Vacinas",
+          "body": "V10 — 21/09/2027 · Válida\nGiárdia — 01/10/2024 · Vencendo"
         }
       ],
       "linksModuleData": {
@@ -251,7 +142,7 @@
         "displayText": {
           "defaultValue": {
             "language": "pt-BR",
-            "value": "Tele-consulta"
+            "value": "Clique aqui para agendar uma tele-consulta com o veterinário"
           }
         }
       }

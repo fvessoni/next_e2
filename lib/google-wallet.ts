@@ -13,6 +13,7 @@ import {
   PASSPORT_BACKGROUND,
   PASSPORT_SUBTITLE,
   PASSPORT_TITLE,
+  TELECONSULT_BUTTON_LABEL,
   TELECONSULT_URL,
   passportOverview,
   passportStatusLine,
@@ -194,16 +195,24 @@ function vaccineModules(items: SanitaryItem[], today: string) {
       },
     ];
   }
-  return items.slice(0, 8).map((item, index) => ({
-    id: `vacina_${index + 1}`,
-    header: clip(item.item, 40),
-    body: clip(
-      `${formatDate(item.valid_to)} · ${sanitaryItemStatusLabel(
-        sanitaryItemStatus(item, today),
-      )}`,
-      40,
-    ),
-  }));
+  return [
+    {
+      id: "vacinas",
+      header: "Vacinas",
+      body: clip(
+        items
+          .slice(0, 8)
+          .map(
+            (item) =>
+              `${item.item} — ${formatDate(item.valid_to)} · ${sanitaryItemStatusLabel(
+                sanitaryItemStatus(item, today),
+              )}`,
+          )
+          .join("\n"),
+        800,
+      ),
+    },
+  ];
 }
 
 function buildGenericObject(
@@ -221,6 +230,7 @@ function buildGenericObject(
     overview.next?.item ?? "",
     overview.next?.valid_to ?? "",
     String(items.length),
+    "goldstatus",
   ].join("-");
   const started = earliestApplied(items);
   const statusLine = passportStatusLine(items, today);
@@ -265,11 +275,6 @@ function buildGenericObject(
             )
           : "Nenhum item sanitário",
       },
-      {
-        id: "teleconsulta",
-        header: "Tele-consulta",
-        body: "Clique no botão abaixo para agendar uma tele-consulta com o veterinário",
-      },
       ...vaccineModules(items, today),
     ],
     linksModuleData: {
@@ -299,7 +304,7 @@ function buildGenericObject(
           },
         },
       },
-      displayText: loc("Tele-consulta"),
+      displayText: loc(TELECONSULT_BUTTON_LABEL),
     },
   };
 

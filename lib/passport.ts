@@ -4,6 +4,8 @@ import type { SanitaryItem } from "@/lib/types";
 export const PASSPORT_TITLE = "Kintal Vax";
 export const PASSPORT_SUBTITLE = "Passaporte de Vacinação";
 export const TELECONSULT_URL = "https://next-e2.vercel.app/videocall";
+export const TELECONSULT_BUTTON_LABEL =
+  "Clique aqui para agendar uma tele-consulta com o veterinário";
 export const PASSPORT_LOGO_PATH = "/kintal-logo.png";
 export const PASSPORT_BACKGROUND = "#000000";
 
