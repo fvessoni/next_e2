@@ -233,7 +233,7 @@ function buildGenericObject(
     subheader: loc(PASSPORT_SUBTITLE),
     logo: {
       sourceUri: {
-        uri: walletAssetUrl(PASSPORT_LOGO_PATH, "660"),
+        uri: walletAssetUrl(PASSPORT_LOGO_PATH, "black"),
       },
       contentDescription: loc(PASSPORT_TITLE),
     },
