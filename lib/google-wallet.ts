@@ -9,6 +9,7 @@ import {
 } from "@/lib/certificate";
 import { formatDate, todayIsoDate } from "@/lib/format";
 import {
+  PASSPORT_LOGO_PATH,
   PASSPORT_SUBTITLE,
   PASSPORT_TITLE,
   TELECONSULT_URL,
@@ -158,7 +159,13 @@ function objectIdFor(issuerId: string, dogId: number) {
 
 function walletAssetUrl(pathname: string, version: string) {
   const url = new URL(pathname, PRODUCTION_ORIGIN);
-  url.searchParams.set("v", version);
+  const safe = version
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+  if (safe) url.searchParams.set("v", safe);
   return url.toString();
 }
 
@@ -226,7 +233,7 @@ function buildGenericObject(
     subheader: loc(PASSPORT_SUBTITLE),
     logo: {
       sourceUri: {
-        uri: walletAssetUrl("/api/certificado/wallet-logo", "1"),
+        uri: walletAssetUrl(PASSPORT_LOGO_PATH, "png"),
       },
       contentDescription: loc(PASSPORT_TITLE),
     },

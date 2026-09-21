@@ -1,28 +1,15 @@
-import { ImageResponse } from "next/og";
+import { readFileSync } from "fs";
+import path from "path";
+import { NextResponse } from "next/server";
 
-export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "660px",
-          height: "660px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#F2B705",
-          color: "#3A2C24",
-          fontSize: 420,
-          fontWeight: 800,
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        K
-      </div>
-    ),
-    { width: 660, height: 660 },
-  );
+export function GET() {
+  const file = readFileSync(path.join(process.cwd(), "public/kintal-logo.png"));
+  return new NextResponse(new Uint8Array(file), {
+    headers: {
+      "Content-Type": "image/png",
+      "Cache-Control": "public, max-age=86400, immutable",
+    },
+  });
 }

@@ -109,7 +109,7 @@
       },
       "logo": {
         "sourceUri": {
-          "uri": "https://next-e2.vercel.app/api/certificado/wallet-logo?v=1"
+          "uri": "https://next-e2.vercel.app/kintal-logo.png?v=png"
         },
         "contentDescription": {
           "defaultValue": {

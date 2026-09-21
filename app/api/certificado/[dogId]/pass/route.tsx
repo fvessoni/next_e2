@@ -1,7 +1,11 @@
+import { readFileSync } from "fs";
+import path from "path";
 import { ImageResponse } from "next/og";
 import { getVaccinationCertificate } from "@/lib/certificate";
 import { DOG_SIZE_LABELS } from "@/lib/types";
 import {
+  PASSPORT_SUBTITLE,
+  PASSPORT_TITLE,
   passportAppliedLabel,
   passportDueLabel,
   passportNextDoseLabel,
@@ -11,6 +15,15 @@ import { todayIsoDate } from "@/lib/format";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function kintalLogoSrc() {
+  const file = readFileSync(
+    path.join(process.cwd(), "public/kintal-logo.png"),
+  );
+  const copy = new Uint8Array(file.byteLength);
+  copy.set(file);
+  return copy.buffer;
+}
 
 export async function GET(
   _request: Request,
@@ -28,6 +41,7 @@ export async function GET(
 
   const { dog, tutor, items } = certificate;
   const overview = passportOverview(items, todayIsoDate());
+  const logoSrc = kintalLogoSrc();
 
   return new ImageResponse(
     (
@@ -38,10 +52,61 @@ export async function GET(
           display: "flex",
           flexDirection: "column",
           backgroundColor: "#F9F7F1",
-          padding: "28px 36px",
           fontFamily: "Arial, sans-serif",
         }}
       >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            backgroundColor: "#3A2C24",
+            padding: "16px 28px",
+          }}
+        >
+          <img
+            src={logoSrc}
+            width={34}
+            height={56}
+          />
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              marginLeft: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                color: "#FFFFFF",
+                fontSize: 28,
+                fontWeight: 800,
+                letterSpacing: 0.5,
+              }}
+            >
+              {PASSPORT_TITLE}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                color: "#D1C7BD",
+                fontSize: 14,
+                fontWeight: 700,
+                letterSpacing: 2,
+                textTransform: "uppercase",
+              }}
+            >
+              {PASSPORT_SUBTITLE}
+            </div>
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            padding: "18px 28px 20px",
+          }}
+        >
         <div
           style={{
             display: "flex",
@@ -181,6 +246,7 @@ export async function GET(
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     ),
