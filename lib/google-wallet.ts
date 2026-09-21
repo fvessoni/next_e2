@@ -34,6 +34,11 @@ type WalletCredentials = {
   privateKey: string;
 };
 
+type WalletImage = {
+  sourceUri: { uri: string };
+  contentDescription?: LocalizedString;
+};
+
 type GenericPass = {
   id: string;
   classId: string;
@@ -44,6 +49,8 @@ type GenericPass = {
   cardTitle: LocalizedString;
   header: LocalizedString;
   subheader: LocalizedString;
+  logo?: WalletImage;
+  heroImage?: WalletImage;
   barcode: { type: "QR_CODE"; value: string; alternateText: string };
   textModulesData: { id: string; header: string; body: string }[];
   linksModuleData: {
@@ -148,6 +155,30 @@ function objectIdFor(issuerId: string, dogId: number) {
   return `${issuerId}.dog-${dogId}`;
 }
 
+function walletAssetUrl(pathname: string, version: string) {
+  const url = new URL(pathname, PRODUCTION_ORIGIN);
+  url.searchParams.set("v", version);
+  return url.toString();
+}
+
+function classTemplateInfo() {
+  const field = (id: string) => ({
+    firstValue: { fields: [{ fieldPath: `object.textModulesData['${id}']` }] },
+  });
+  return {
+    cardTemplateOverride: {
+      cardRowTemplateInfos: [
+        { twoItems: { startItem: field("status"), endItem: field("next") } },
+        { twoItems: { startItem: field("applied"), endItem: field("due") } },
+        { oneItem: { item: field("tutor") } },
+      ],
+    },
+    detailsTemplateOverride: {
+      detailsItemInfos: [{ item: field("history") }],
+    },
+  };
+}
+
 function nextExpiry(items: SanitaryItem[]) {
   if (items.length === 0) return null;
   return [...items].sort((a, b) => a.valid_to.localeCompare(b.valid_to))[0]
@@ -178,6 +209,23 @@ function buildGenericObject(
   const today = todayIsoDate();
   const expiry = nextExpiry(items);
   const overview = passportOverview(items, today);
+  const assetVersion = [
+    overview.statusLabel,
+    overview.next?.item ?? "",
+    overview.next?.valid_to ?? "",
+    String(items.length),
+  ].join("-");
+  const history =
+    items.length === 0
+      ? "Nenhum item sanitário"
+      : items
+          .map((item) => {
+            const status = sanitaryItemStatusLabel(
+              sanitaryItemStatus(item, today),
+            );
+            return `${item.item} (${status} até ${formatDate(item.valid_to)})`;
+          })
+          .join(" · ");
 
   const object: GenericPass = {
     id: objectIdFor(issuerId, dog.dog_id),
@@ -189,6 +237,21 @@ function buildGenericObject(
     cardTitle: loc(PASSPORT_TITLE),
     header: loc(clip(dog.name, 40)),
     subheader: loc(PASSPORT_SUBTITLE),
+    logo: {
+      sourceUri: {
+        uri: walletAssetUrl("/api/certificado/wallet-logo", "1"),
+      },
+      contentDescription: loc(PASSPORT_TITLE),
+    },
+    heroImage: {
+      sourceUri: {
+        uri: walletAssetUrl(
+          `/api/certificado/${dog.dog_id}/pass`,
+          assetVersion,
+        ),
+      },
+      contentDescription: loc(PASSPORT_SUBTITLE),
+    },
     barcode: {
       type: "QR_CODE",
       value: certificateUrl,
@@ -215,6 +278,11 @@ function buildGenericObject(
         id: "due",
         header: "Validade",
         body: passportDueLabel(overview.next),
+      },
+      {
+        id: "history",
+        header: "Histórico de vacinas",
+        body: clip(history, 200),
       },
       ...sanitaryModules(items, today, overview.next?.sanitary_item_id),
     ],
@@ -332,18 +400,34 @@ async function walletFetch(
 
 async function ensureClass(token: string, issuerId: string) {
   const id = classIdFor(issuerId);
+  const payload = { id, classTemplateInfo: classTemplateInfo() };
   const get = await walletFetch(token, "GET", `${WALLET_API}/genericClass/${id}`);
-  if (get.response.ok) return id;
-  if (get.response.status !== 404) {
+  if (get.response.status === 404) {
+    const insert = await walletFetch(token, "POST", `${WALLET_API}/genericClass`, payload);
+    if (!insert.response.ok && insert.response.status !== 409) {
+      throw new Error(
+        `Wallet class create failed (${insert.response.status}): ${insert.text}`,
+      );
+    }
+    return id;
+  }
+  if (!get.response.ok) {
     throw new Error(`Wallet class lookup failed (${get.response.status}): ${get.text}`);
   }
 
-  const insert = await walletFetch(token, "POST", `${WALLET_API}/genericClass`, {
-    id,
-  });
-  if (!insert.response.ok && insert.response.status !== 409) {
-    throw new Error(
-      `Wallet class create failed (${insert.response.status}): ${insert.text}`,
+  const existing = JSON.parse(get.text) as Record<string, unknown>;
+  delete existing.kind;
+  const update = await walletFetch(
+    token,
+    "PUT",
+    `${WALLET_API}/genericClass/${id}`,
+    { ...existing, ...payload },
+  );
+  if (!update.response.ok) {
+    console.error(
+      "Wallet class update failed",
+      update.response.status,
+      update.text,
     );
   }
   return id;
