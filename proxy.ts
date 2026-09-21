@@ -3,7 +3,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import type { UserType } from "@/lib/types";
 
-const PUBLIC_PATHS = ["/auth/login", "/certificado", "/api/certificado"];
+const PUBLIC_PATHS = [
+  "/auth/login",
+  "/certificado",
+  "/api/certificado",
+  "/videocall",
+];
 const ADMIN_PATHS = ["/users"];
 
 function getSecret() {

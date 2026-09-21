@@ -6,74 +6,15 @@
         "cardTemplateOverride": {
           "cardRowTemplateInfos": [
             {
-              "twoItems": {
-                "startItem": {
-                  "firstValue": {
-                    "fields": [
-                      {
-                        "fieldPath": "object.textModulesData['status']"
-                      }
-                    ]
-                  }
-                },
-                "endItem": {
-                  "firstValue": {
-                    "fields": [
-                      {
-                        "fieldPath": "object.textModulesData['next']"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            {
-              "twoItems": {
-                "startItem": {
-                  "firstValue": {
-                    "fields": [
-                      {
-                        "fieldPath": "object.textModulesData['applied']"
-                      }
-                    ]
-                  }
-                },
-                "endItem": {
-                  "firstValue": {
-                    "fields": [
-                      {
-                        "fieldPath": "object.textModulesData['due']"
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            {
               "oneItem": {
                 "item": {
                   "firstValue": {
                     "fields": [
                       {
-                        "fieldPath": "object.textModulesData['tutor']"
+                        "fieldPath": "object.textModulesData['proxima_dose']"
                       }
                     ]
                   }
-                }
-              }
-            }
-          ]
-        },
-        "detailsTemplateOverride": {
-          "detailsItemInfos": [
-            {
-              "item": {
-                "firstValue": {
-                  "fields": [
-                    {
-                      "fieldPath": "object.textModulesData['history']"
-                    }
-                  ]
                 }
               }
             }
@@ -87,7 +28,7 @@
       "id": "{issuerId}.dog-{dogId}",
       "classId": "{issuerId}.kintalvax_certificate",
       "genericType": "GENERIC_OTHER",
-      "hexBackgroundColor": "#3A2C24",
+      "hexBackgroundColor": "#000000",
       "state": "ACTIVE",
       "cardTitle": {
         "defaultValue": {
@@ -95,16 +36,16 @@
           "value": "Kintal Vax"
         }
       },
-      "subheader": {
-        "defaultValue": {
-          "language": "pt-BR",
-          "value": "Passaporte de Vacinação"
-        }
-      },
       "header": {
         "defaultValue": {
           "language": "pt-BR",
           "value": "Thor"
+        }
+      },
+      "subheader": {
+        "defaultValue": {
+          "language": "pt-BR",
+          "value": "⚠️ Atenção — 1 vacina vencendo"
         }
       },
       "logo": {
@@ -132,38 +73,28 @@
       "barcode": {
         "type": "QR_CODE",
         "value": "https://next-e2.vercel.app/certificado/{dogId}",
-        "alternateText": "https://next-e2.vercel.app/certificado/{dogId}"
+        "alternateText": "Escaneie para verificar este certificado"
       },
       "textModulesData": [
         {
-          "id": "status",
-          "header": "Passaporte",
-          "body": "Atenção"
+          "id": "proxima_dose",
+          "header": "PRÓXIMA DOSE",
+          "body": "Antirrábica — 15/10/2024"
         },
         {
-          "id": "next",
-          "header": "Próxima dose",
-          "body": "Antirrábica"
+          "id": "v10",
+          "header": "V10 (POLIVALENTE)",
+          "body": "Aplicada em 10/08/2023 — Válida"
         },
         {
-          "id": "applied",
-          "header": "Aplicada em",
-          "body": "15/10/2023"
+          "id": "giardia",
+          "header": "GIÁRDIA",
+          "body": "Aplicada em 10/08/2023 — Vencendo"
         },
         {
-          "id": "due",
-          "header": "Próxima dose",
-          "body": "15/10/2024"
-        },
-        {
-          "id": "tutor",
-          "header": "Tutor",
-          "body": "Tutor"
-        },
-        {
-          "id": "history",
-          "header": "Histórico de vacinas",
-          "body": "Antirrábica (Válida) · V10 (Válida) · Giárdia (Vencendo) · Leishmaniose (Válida)"
+          "id": "leishmaniose",
+          "header": "LEISHMANIOSE",
+          "body": "Aplicada em 05/02/2023 — Válida"
         }
       ],
       "linksModuleData": {
@@ -180,40 +111,24 @@
             }
           },
           {
-            "id": "teleconsult",
-            "uri": "https://kintalcoffedog.com.br",
-            "description": "https://kintalcoffedog.com.br",
+            "id": "agendar_teleconsulta",
+            "uri": "https://next-e2.vercel.app/videocall",
+            "description": "Tele-consulta",
             "localizedDescription": {
               "defaultValue": {
                 "language": "pt-BR",
-                "value": "Agende sua tele-consulta"
+                "value": "Tele-consulta"
               }
             }
           }
         ]
       },
-      "appLinkData": {
-        "androidAppLinkInfo": {
-          "appTarget": {
-            "targetUri": {
-              "uri": "https://next-e2.vercel.app/certificado/{dogId}",
-              "description": "Certificado de vacinação na web"
-            }
-          }
+      "validTimeInterval": {
+        "start": {
+          "date": "2023-10-15T00:00:00Z"
         },
-        "webAppLinkInfo": {
-          "appTarget": {
-            "targetUri": {
-              "uri": "https://next-e2.vercel.app/certificado/{dogId}",
-              "description": "Certificado de vacinação na web"
-            }
-          }
-        },
-        "displayText": {
-          "defaultValue": {
-            "language": "pt-BR",
-            "value": "Ver certificado"
-          }
+        "end": {
+          "date": "2024-10-15T23:59:59Z"
         }
       }
     }

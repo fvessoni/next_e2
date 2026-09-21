@@ -3,8 +3,9 @@ import type { SanitaryItem } from "@/lib/types";
 
 export const PASSPORT_TITLE = "Kintal Vax";
 export const PASSPORT_SUBTITLE = "Passaporte de Vacinação";
-export const TELECONSULT_URL = "https://kintalcoffedog.com.br";
+export const TELECONSULT_URL = "https://next-e2.vercel.app/videocall";
 export const PASSPORT_LOGO_PATH = "/kintal-logo.png";
+export const PASSPORT_BACKGROUND = "#000000";
 
 function daysUntil(isoDate: string, today: string) {
   const [y1, m1, d1] = today.split("-").map(Number);
@@ -50,6 +51,18 @@ export function passportOverview(items: SanitaryItem[], today: string) {
     urgent,
     nextBadge: urgent ? "URGENTE" : next ? "EM DIA" : null,
   };
+}
+
+export function passportStatusLine(items: SanitaryItem[], today: string) {
+  const overview = passportOverview(items, today);
+  if (items.length === 0) return "Sem itens";
+  if (overview.allGood) return "Em dia";
+  const dueCount = items.filter(
+    (item) => sanitaryItemStatus(item, today) === "due",
+  ).length;
+  if (dueCount === 1) return "⚠️ Atenção — 1 vacina vencendo";
+  if (dueCount > 1) return `⚠️ Atenção — ${dueCount} vacinas vencendo`;
+  return "⚠️ Atenção";
 }
 
 export function passportNextDoseLabel(item: SanitaryItem | null) {

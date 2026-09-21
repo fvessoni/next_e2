@@ -49,7 +49,7 @@ export async function GET(
           style={{
             display: "flex",
             alignItems: "center",
-            backgroundColor: "#3A2C24",
+            backgroundColor: "#000000",
             padding: "16px 28px",
           }}
         >

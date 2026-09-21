@@ -10,13 +10,12 @@ import {
 import { formatDate, todayIsoDate } from "@/lib/format";
 import {
   PASSPORT_LOGO_PATH,
+  PASSPORT_BACKGROUND,
   PASSPORT_SUBTITLE,
   PASSPORT_TITLE,
   TELECONSULT_URL,
-  passportAppliedLabel,
-  passportDueLabel,
-  passportNextDoseLabel,
   passportOverview,
+  passportStatusLine,
   sanitaryItemStatusLabel,
   sanitaryItemStatus,
 } from "@/lib/passport";
@@ -28,7 +27,7 @@ const WALLET_SCOPE = "https://www.googleapis.com/auth/wallet_object.issuer";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const WALLET_API = "https://walletobjects.googleapis.com/walletobjects/v1";
 const PRODUCTION_ORIGIN = "https://next-e2.vercel.app";
-const PASS_BACKGROUND = "#3A2C24";
+const PASS_BACKGROUND = PASSPORT_BACKGROUND;
 
 type WalletCredentials = {
   issuerId: string;
@@ -72,7 +71,7 @@ type GenericPass = {
     };
     displayText: LocalizedString;
   };
-  validTimeInterval?: { end: { date: string } };
+  validTimeInterval?: { start?: { date: string }; end: { date: string } };
 };
 
 type LocalizedString = {
@@ -179,24 +178,29 @@ function nextExpiry(items: SanitaryItem[]) {
     .valid_to;
 }
 
-function sanitaryModules(items: SanitaryItem[], today: string, skipId?: number) {
-  return items
-    .filter((item) => item.sanitary_item_id !== skipId)
-    .slice(0, 6)
-    .map((item) => ({
-      id: `sanitary-${item.sanitary_item_id}`,
-      header: clip(item.item, 40),
-      body: clip(
-        `${sanitaryItemStatusLabel(sanitaryItemStatus(item, today))} até ${formatDate(item.valid_to)}`,
-        60,
-      ),
-    }));
+function earliestApplied(items: SanitaryItem[]) {
+  if (items.length === 0) return null;
+  return [...items].sort((a, b) => a.valid_from.localeCompare(b.valid_from))[0]
+    .valid_from;
+}
+
+function sanitaryModules(items: SanitaryItem[], today: string) {
+  return items.slice(0, 8).map((item) => ({
+    id: `item-${item.sanitary_item_id}`,
+    header: clip(item.item.toUpperCase(), 40),
+    body: clip(
+      `Aplicada em ${formatDate(item.valid_from)} — ${sanitaryItemStatusLabel(
+        sanitaryItemStatus(item, today),
+      )}`,
+      60,
+    ),
+  }));
 }
 
 function buildGenericObject(
   issuerId: string,
   dog: Dog,
-  tutor: Tutor,
+  _tutor: Tutor,
   items: SanitaryItem[],
   certificateUrl: string,
 ): GenericPass {
@@ -209,17 +213,7 @@ function buildGenericObject(
     overview.next?.valid_to ?? "",
     String(items.length),
   ].join("-");
-  const history =
-    items.length === 0
-      ? "Nenhum item sanitário"
-      : items
-          .map((item) => {
-            const status = sanitaryItemStatusLabel(
-              sanitaryItemStatus(item, today),
-            );
-            return `${item.item} (${status} até ${formatDate(item.valid_to)})`;
-          })
-          .join(" · ");
+  const started = earliestApplied(items);
 
   const object: GenericPass = {
     id: objectIdFor(issuerId, dog.dog_id),
@@ -230,7 +224,7 @@ function buildGenericObject(
     notifyPreference: "NOTIFY_ON_UPDATE",
     cardTitle: loc(PASSPORT_TITLE),
     header: loc(clip(dog.name, 40)),
-    subheader: loc(PASSPORT_SUBTITLE),
+    subheader: loc(clip(passportStatusLine(items, today), 40)),
     logo: {
       sourceUri: {
         uri: walletAssetUrl(PASSPORT_LOGO_PATH, "black"),
@@ -249,36 +243,20 @@ function buildGenericObject(
     barcode: {
       type: "QR_CODE",
       value: certificateUrl,
-      alternateText: certificateUrl,
+      alternateText: "Escaneie para verificar este certificado",
     },
     textModulesData: [
       {
-        id: "status",
-        header: "Passaporte",
-        body: clip(overview.statusLabel, 40),
+        id: "proxima_dose",
+        header: "PRÓXIMA DOSE",
+        body: overview.next
+          ? clip(
+              `${overview.next.item} — ${formatDate(overview.next.valid_to)}`,
+              40,
+            )
+          : "Nenhum item sanitário",
       },
-      { id: "tutor", header: "Tutor", body: clip(tutor.name, 40) },
-      {
-        id: "next",
-        header: "Próxima dose",
-        body: clip(passportNextDoseLabel(overview.next), 40),
-      },
-      {
-        id: "applied",
-        header: "Aplicada em",
-        body: passportAppliedLabel(overview.next),
-      },
-      {
-        id: "due",
-        header: "Validade",
-        body: passportDueLabel(overview.next),
-      },
-      {
-        id: "history",
-        header: "Histórico de vacinas",
-        body: clip(history, 200),
-      },
-      ...sanitaryModules(items, today, overview.next?.sanitary_item_id),
+      ...sanitaryModules(items, today),
     ],
     linksModuleData: {
       uris: [
@@ -292,7 +270,7 @@ function buildGenericObject(
           id: "teleconsult",
           uri: TELECONSULT_URL,
           description: TELECONSULT_URL,
-          localizedDescription: loc("Agende sua tele-consulta"),
+          localizedDescription: loc("Tele-consulta"),
         },
       ],
     },
@@ -318,7 +296,10 @@ function buildGenericObject(
   };
 
   if (expiry) {
-    object.validTimeInterval = { end: { date: `${expiry}T23:59:59-03:00` } };
+    object.validTimeInterval = {
+      ...(started ? { start: { date: `${started}T00:00:00-03:00` } } : {}),
+      end: { date: `${expiry}T23:59:59-03:00` },
+    };
   }
 
   return object;
