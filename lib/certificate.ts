@@ -46,7 +46,7 @@ export async function certificateQrSvg(url: string): Promise<string> {
     type: "svg",
     margin: 1,
     errorCorrectionLevel: "M",
-    color: { dark: "#3A2C24", light: "#ffffff" },
+    color: { dark: "#0a0a0a", light: "#ffffff" },
   });
   return svg.replace(/<\?xml[^>]*>/, "").trim();
 }
