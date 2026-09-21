@@ -1,11 +1,6 @@
-"use client";
-
-import { useState } from "react";
-
 type Vaccine = { name: string; detail: string };
 
 export function WalletPreviewCard({
-  title,
   dogName,
   statusLine,
   nextDose,
@@ -14,7 +9,6 @@ export function WalletPreviewCard({
   videocallUrl,
   vaccines,
 }: {
-  title: string;
   dogName: string;
   statusLine: string;
   nextDose: string;
@@ -23,14 +17,19 @@ export function WalletPreviewCard({
   videocallUrl: string;
   vaccines: Vaccine[];
 }) {
-  const [open, setOpen] = useState(false);
-
   return (
     <main className="min-h-screen bg-[#1c1c1e] px-4 py-10 text-white">
       <div className="mx-auto flex w-full max-w-md flex-col gap-8">
-        <p className="text-center text-xs uppercase tracking-[0.2em] text-white/50">
-          Prévia da Carteira do Google
-        </p>
+        <div className="text-center">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+            Prévia da Carteira do Google
+          </p>
+          <p className="mt-2 text-xs text-white/45">
+            Um botão nativo só: Tele-consulta. O certificado fica como link.
+            A Carteira ainda desenha uma faixa compacta com o nome do cão —
+            isso não dá para ocultar.
+          </p>
+        </div>
 
         <section>
           <h2 className="mb-3 text-sm font-medium text-white/60">
@@ -60,60 +59,49 @@ export function WalletPreviewCard({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={heroUrl} alt="" className="h-auto w-full bg-[#F9F7F1]" />
             <div className="px-5 pb-6 pt-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-white/50">
-                {title}
-              </p>
-              <p className="mt-1 text-2xl font-semibold">{dogName}</p>
-              <p className="mt-1 text-sm text-[#F2B705]">{statusLine}</p>
-
-              <div className="mt-5 grid grid-cols-2 gap-3">
-                <a
-                  href={certificateUrl}
-                  className="inline-flex h-11 items-center justify-center rounded-full bg-white text-sm font-semibold text-black"
-                >
-                  Ver certificado
-                </a>
-                <a
-                  href={videocallUrl}
-                  className="inline-flex h-11 items-center justify-center rounded-full bg-[#F2B705] text-sm font-semibold text-black"
-                >
-                  Tele-consulta
-                </a>
-              </div>
-
-              <div className="mt-5 border-t border-white/10 pt-4">
+              <div>
                 <p className="text-xs uppercase tracking-wide text-white/50">
                   Próxima dose
                 </p>
                 <p className="mt-1 text-base font-medium">{nextDose}</p>
               </div>
 
-              <button
-                type="button"
-                className="mt-5 flex w-full items-center justify-between rounded-2xl bg-white/10 px-4 py-3 text-left"
-                onClick={() => setOpen((value) => !value)}
+              <div className="mt-5">
+                <p className="text-xs uppercase tracking-wide text-[#F2B705]">
+                  Tele-consulta
+                </p>
+                <p className="mt-1 text-sm text-white/80">
+                  Falar com o veterinário agora
+                </p>
+              </div>
+
+              <a
+                href={videocallUrl}
+                className="mt-5 flex h-11 items-center justify-center rounded-full bg-[#F2B705] text-sm font-semibold text-black"
               >
-                <span className="text-sm font-semibold">Vacinas</span>
-                <span className="text-xs text-white/60">
-                  {open ? "Recolher" : `${vaccines.length} itens`}
-                </span>
-              </button>
-              {open ? (
-                <ul className="mt-2 space-y-3 rounded-2xl bg-white/5 p-4">
-                  {vaccines.length === 0 ? (
-                    <li className="text-sm text-white/60">Nenhum item sanitário</li>
-                  ) : (
-                    vaccines.map((vaccine) => (
-                      <li key={vaccine.name + vaccine.detail}>
-                        <p className="text-sm font-semibold uppercase">
-                          {vaccine.name}
-                        </p>
-                        <p className="text-xs text-white/60">{vaccine.detail}</p>
+                Tele-consulta
+              </a>
+
+              <div className="mt-6 border-t border-white/10 pt-4">
+                {vaccines.length === 0 ? (
+                  <p className="text-sm text-white/80">Nenhum item sanitário</p>
+                ) : (
+                  <ul className="flex flex-col gap-3">
+                    {vaccines.map((vaccine, index) => (
+                      <li key={`${vaccine.name}-${index}`}>
+                        <p className="text-sm font-medium">{vaccine.name}</p>
+                        <p className="text-sm text-white/70">{vaccine.detail}</p>
                       </li>
-                    ))
-                  )}
-                </ul>
-              ) : null}
+                    ))}
+                  </ul>
+                )}
+                <a
+                  href={certificateUrl}
+                  className="mt-5 inline-block text-sm text-[#8ab4f8] underline"
+                >
+                  Ver certificado
+                </a>
+              </div>
             </div>
           </article>
         </section>

@@ -6,21 +6,12 @@
         "cardTemplateOverride": {
           "cardRowTemplateInfos": [
             {
-              "twoItems": {
-                "startItem": {
+              "oneItem": {
+                "item": {
                   "firstValue": {
                     "fields": [
                       {
-                        "fieldPath": "object.linksModuleData.uris['certificate']"
-                      }
-                    ]
-                  }
-                },
-                "endItem": {
-                  "firstValue": {
-                    "fields": [
-                      {
-                        "fieldPath": "object.linksModuleData.uris['teleconsult']"
+                        "fieldPath": "object.textModulesData['proxima_dose']"
                       }
                     ]
                   }
@@ -33,7 +24,7 @@
                   "firstValue": {
                     "fields": [
                       {
-                        "fieldPath": "object.textModulesData['proxima_dose']"
+                        "fieldPath": "object.textModulesData['teleconsulta']"
                       }
                     ]
                   }
@@ -62,6 +53,17 @@
         },
         "detailsTemplateOverride": {
           "detailsItemInfos": [
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacinas']"
+                    }
+                  ]
+                }
+              }
+            },
             {
               "item": {
                 "firstValue": {
@@ -149,6 +151,17 @@
                   ]
                 }
               }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.linksModuleData.uris['certificate']"
+                    }
+                  ]
+                }
+              }
             }
           ]
         }
@@ -174,32 +187,15 @@
           "value": "Thor"
         }
       },
-      "subheader": {
-        "defaultValue": {
-          "language": "pt-BR",
-          "value": "Atenção — 1 vacina vencendo"
-        }
-      },
       "logo": {
         "sourceUri": {
           "uri": "https://next-e2.vercel.app/kintal-logo.png?v=black"
-        },
-        "contentDescription": {
-          "defaultValue": {
-            "language": "pt-BR",
-            "value": "Kintal Vax"
-          }
         }
       },
       "heroImage": {
         "sourceUri": {
           "uri": "https://next-e2.vercel.app/api/certificado/{dogId}/pass"
         }
-      },
-      "barcode": {
-        "type": "QR_CODE",
-        "value": "https://next-e2.vercel.app/certificado/{dogId}",
-        "alternateText": "Escaneie para verificar este certificado"
       },
       "textModulesData": [
         {
@@ -213,9 +209,19 @@
           "body": "Antirrábica — 15/10/2024"
         },
         {
+          "id": "teleconsulta",
+          "header": "Tele-consulta",
+          "body": "Clique para agendar uma tele-consulta com o veterinário"
+        },
+        {
           "id": "vacina_1",
-          "header": "V10 (POLIVALENTE)",
-          "body": "Aplicada em 10/08/2023 — Válida"
+          "header": "V10",
+          "body": "21/09/2027 · Válida"
+        },
+        {
+          "id": "vacina_2",
+          "header": "Giárdia",
+          "body": "01/10/2024 · Vencendo"
         }
       ],
       "linksModuleData": {
@@ -224,13 +230,30 @@
             "id": "certificate",
             "uri": "https://next-e2.vercel.app/certificado/{dogId}",
             "description": "Ver certificado"
-          },
-          {
-            "id": "teleconsult",
-            "uri": "https://next-e2.vercel.app/videocall",
-            "description": "Tele-consulta"
           }
         ]
+      },
+      "appLinkData": {
+        "androidAppLinkInfo": {
+          "appTarget": {
+            "targetUri": {
+              "uri": "https://next-e2.vercel.app/videocall"
+            }
+          }
+        },
+        "webAppLinkInfo": {
+          "appTarget": {
+            "targetUri": {
+              "uri": "https://next-e2.vercel.app/videocall"
+            }
+          }
+        },
+        "displayText": {
+          "defaultValue": {
+            "language": "pt-BR",
+            "value": "Tele-consulta"
+          }
+        }
       }
     }
   ]

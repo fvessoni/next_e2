@@ -1,7 +1,6 @@
 import { getVaccinationCertificate } from "@/lib/certificate";
 import { formatDate, todayIsoDate } from "@/lib/format";
 import {
-  PASSPORT_TITLE,
   passportOverview,
   passportStatusLine,
   sanitaryItemStatus,
@@ -33,14 +32,13 @@ export default async function WalletPreviewPage({
   const overview = passportOverview(items, today);
   const vaccines = items.map((item) => ({
     name: item.item,
-    detail: `Aplicada em ${formatDate(item.valid_from)} — ${sanitaryItemStatusLabel(
+    detail: `${formatDate(item.valid_to)} · ${sanitaryItemStatusLabel(
       sanitaryItemStatus(item, today),
     )}`,
   }));
 
   return (
     <WalletPreviewCard
-      title={PASSPORT_TITLE}
       dogName={dog.name}
       statusLine={passportStatusLine(items, today)}
       nextDose={

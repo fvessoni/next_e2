@@ -49,10 +49,10 @@ type GenericPass = {
   notifyPreference?: "NOTIFY_ON_UPDATE";
   cardTitle: LocalizedString;
   header: LocalizedString;
-  subheader: LocalizedString;
+  subheader?: LocalizedString;
   logo?: WalletImage;
   heroImage?: WalletImage;
-  barcode: { type: "QR_CODE"; value: string; alternateText: string };
+  barcode?: { type: "QR_CODE"; value: string; alternateText: string };
   textModulesData: { id: string; header: string; body: string }[];
   linksModuleData: {
     uris: {
@@ -184,15 +184,24 @@ function earliestApplied(items: SanitaryItem[]) {
     .valid_from;
 }
 
-function sanitaryModules(items: SanitaryItem[], today: string) {
+function vaccineModules(items: SanitaryItem[], today: string) {
+  if (items.length === 0) {
+    return [
+      {
+        id: "vacinas",
+        header: "Vacinas",
+        body: "Nenhum item sanitário",
+      },
+    ];
+  }
   return items.slice(0, 8).map((item, index) => ({
     id: `vacina_${index + 1}`,
-    header: clip(item.item.toUpperCase(), 40),
+    header: clip(item.item, 40),
     body: clip(
-      `Aplicada em ${formatDate(item.valid_from)} — ${sanitaryItemStatusLabel(
+      `${formatDate(item.valid_to)} · ${sanitaryItemStatusLabel(
         sanitaryItemStatus(item, today),
       )}`,
-      60,
+      40,
     ),
   }));
 }
@@ -225,7 +234,6 @@ function buildGenericObject(
     notifyPreference: "NOTIFY_ON_UPDATE",
     cardTitle: loc(PASSPORT_TITLE),
     header: loc(clip(dog.name, 40)),
-    subheader: loc(clip(statusLine, 40)),
     logo: {
       sourceUri: {
         uri: walletAssetUrl(PASSPORT_LOGO_PATH, "black"),
@@ -240,11 +248,6 @@ function buildGenericObject(
         ),
       },
       contentDescription: loc(PASSPORT_SUBTITLE),
-    },
-    barcode: {
-      type: "QR_CODE",
-      value: certificateUrl,
-      alternateText: "Escaneie para verificar este certificado",
     },
     textModulesData: [
       {
@@ -262,7 +265,12 @@ function buildGenericObject(
             )
           : "Nenhum item sanitário",
       },
-      ...sanitaryModules(items, today),
+      {
+        id: "teleconsulta",
+        header: "Tele-consulta",
+        body: "Clique no botão abaixo para agendar uma tele-consulta com o veterinário",
+      },
+      ...vaccineModules(items, today),
     ],
     linksModuleData: {
       uris: [
@@ -272,13 +280,26 @@ function buildGenericObject(
           description: "Ver certificado",
           localizedDescription: loc("Ver certificado"),
         },
-        {
-          id: "teleconsult",
-          uri: TELECONSULT_URL,
-          description: "Tele-consulta",
-          localizedDescription: loc("Tele-consulta"),
-        },
       ],
+    },
+    appLinkData: {
+      androidAppLinkInfo: {
+        appTarget: {
+          targetUri: {
+            uri: TELECONSULT_URL,
+            description: "Tele-consulta veterinária",
+          },
+        },
+      },
+      webAppLinkInfo: {
+        appTarget: {
+          targetUri: {
+            uri: TELECONSULT_URL,
+            description: "Tele-consulta veterinária",
+          },
+        },
+      },
+      displayText: loc("Tele-consulta"),
     },
   };
 
