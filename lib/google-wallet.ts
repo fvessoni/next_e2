@@ -20,6 +20,7 @@ import {
   sanitaryItemStatus,
 } from "@/lib/passport";
 import type { Dog, SanitaryItem, Tutor } from "@/lib/types";
+import passLayout from "@/lib/wallet-pass-layout.json";
 
 const CLASS_SUFFIX = "kintalvax_certificate";
 const WALLET_SCOPE = "https://www.googleapis.com/auth/wallet_object.issuer";
@@ -162,21 +163,7 @@ function walletAssetUrl(pathname: string, version: string) {
 }
 
 function classTemplateInfo() {
-  const field = (id: string) => ({
-    firstValue: { fields: [{ fieldPath: `object.textModulesData['${id}']` }] },
-  });
-  return {
-    cardTemplateOverride: {
-      cardRowTemplateInfos: [
-        { twoItems: { startItem: field("status"), endItem: field("next") } },
-        { twoItems: { startItem: field("applied"), endItem: field("due") } },
-        { oneItem: { item: field("tutor") } },
-      ],
-    },
-    detailsTemplateOverride: {
-      detailsItemInfos: [{ item: field("history") }],
-    },
-  };
+  return passLayout.genericClasses[0].classTemplateInfo;
 }
 
 function nextExpiry(items: SanitaryItem[]) {
@@ -598,6 +585,12 @@ export async function createGoogleWalletSaveUrl(
     typ: "savetowallet",
     origins: walletOrigins(origin),
     payload: {
+      genericClasses: [
+        {
+          id: written.object.classId,
+          classTemplateInfo: classTemplateInfo(),
+        },
+      ],
       genericObjects: [{ id: written.object.id }],
     },
   })

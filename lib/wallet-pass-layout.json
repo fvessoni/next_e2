@@ -1,0 +1,221 @@
+{
+  "genericClasses": [
+    {
+      "id": "{issuerId}.kintalvax_certificate",
+      "classTemplateInfo": {
+        "cardTemplateOverride": {
+          "cardRowTemplateInfos": [
+            {
+              "twoItems": {
+                "startItem": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.textModulesData['status']"
+                      }
+                    ]
+                  }
+                },
+                "endItem": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.textModulesData['next']"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "twoItems": {
+                "startItem": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.textModulesData['applied']"
+                      }
+                    ]
+                  }
+                },
+                "endItem": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.textModulesData['due']"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
+              "oneItem": {
+                "item": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.textModulesData['tutor']"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "detailsTemplateOverride": {
+          "detailsItemInfos": [
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['history']"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "genericObjects": [
+    {
+      "id": "{issuerId}.dog-{dogId}",
+      "classId": "{issuerId}.kintalvax_certificate",
+      "genericType": "GENERIC_OTHER",
+      "hexBackgroundColor": "#3A2C24",
+      "state": "ACTIVE",
+      "cardTitle": {
+        "defaultValue": {
+          "language": "pt-BR",
+          "value": "Kintal Vax"
+        }
+      },
+      "subheader": {
+        "defaultValue": {
+          "language": "pt-BR",
+          "value": "Passaporte de Vacinação"
+        }
+      },
+      "header": {
+        "defaultValue": {
+          "language": "pt-BR",
+          "value": "Thor"
+        }
+      },
+      "logo": {
+        "sourceUri": {
+          "uri": "https://next-e2.vercel.app/api/certificado/wallet-logo?v=1"
+        },
+        "contentDescription": {
+          "defaultValue": {
+            "language": "pt-BR",
+            "value": "Kintal Vax"
+          }
+        }
+      },
+      "heroImage": {
+        "sourceUri": {
+          "uri": "https://next-e2.vercel.app/api/certificado/{dogId}/pass"
+        },
+        "contentDescription": {
+          "defaultValue": {
+            "language": "pt-BR",
+            "value": "Passaporte de Vacinação"
+          }
+        }
+      },
+      "barcode": {
+        "type": "QR_CODE",
+        "value": "https://next-e2.vercel.app/certificado/{dogId}",
+        "alternateText": "https://next-e2.vercel.app/certificado/{dogId}"
+      },
+      "textModulesData": [
+        {
+          "id": "status",
+          "header": "Passaporte",
+          "body": "Atenção"
+        },
+        {
+          "id": "next",
+          "header": "Próxima dose",
+          "body": "Antirrábica"
+        },
+        {
+          "id": "applied",
+          "header": "Aplicada em",
+          "body": "15/10/2023"
+        },
+        {
+          "id": "due",
+          "header": "Próxima dose",
+          "body": "15/10/2024"
+        },
+        {
+          "id": "tutor",
+          "header": "Tutor",
+          "body": "Tutor"
+        },
+        {
+          "id": "history",
+          "header": "Histórico de vacinas",
+          "body": "Antirrábica (Válida) · V10 (Válida) · Giárdia (Vencendo) · Leishmaniose (Válida)"
+        }
+      ],
+      "linksModuleData": {
+        "uris": [
+          {
+            "id": "certificate",
+            "uri": "https://next-e2.vercel.app/certificado/{dogId}",
+            "description": "https://next-e2.vercel.app/certificado/{dogId}",
+            "localizedDescription": {
+              "defaultValue": {
+                "language": "pt-BR",
+                "value": "Abrir certificado na web"
+              }
+            }
+          },
+          {
+            "id": "teleconsult",
+            "uri": "https://kintalcoffedog.com.br",
+            "description": "https://kintalcoffedog.com.br",
+            "localizedDescription": {
+              "defaultValue": {
+                "language": "pt-BR",
+                "value": "Agende sua tele-consulta"
+              }
+            }
+          }
+        ]
+      },
+      "appLinkData": {
+        "androidAppLinkInfo": {
+          "appTarget": {
+            "targetUri": {
+              "uri": "https://next-e2.vercel.app/certificado/{dogId}",
+              "description": "Certificado de vacinação na web"
+            }
+          }
+        },
+        "webAppLinkInfo": {
+          "appTarget": {
+            "targetUri": {
+              "uri": "https://next-e2.vercel.app/certificado/{dogId}",
+              "description": "Certificado de vacinação na web"
+            }
+          }
+        },
+        "displayText": {
+          "defaultValue": {
+            "language": "pt-BR",
+            "value": "Ver certificado"
+          }
+        }
+      }
+    }
+  ]
+}
