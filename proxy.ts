@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   "/certificado",
   "/api/certificado",
   "/videocall",
+  "/wallet-preview",
 ];
 const ADMIN_PATHS = ["/users"];
 

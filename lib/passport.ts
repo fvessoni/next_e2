@@ -60,9 +60,9 @@ export function passportStatusLine(items: SanitaryItem[], today: string) {
   const dueCount = items.filter(
     (item) => sanitaryItemStatus(item, today) === "due",
   ).length;
-  if (dueCount === 1) return "⚠️ Atenção — 1 vacina vencendo";
-  if (dueCount > 1) return `⚠️ Atenção — ${dueCount} vacinas vencendo`;
-  return "⚠️ Atenção";
+  if (dueCount === 1) return "Atenção — 1 vacina vencendo";
+  if (dueCount > 1) return `Atenção — ${dueCount} vacinas vencendo`;
+  return "Atenção";
 }
 
 export function passportNextDoseLabel(item: SanitaryItem | null) {

@@ -5,10 +5,8 @@ import { DOG_SIZE_LABELS } from "@/lib/types";
 import {
   PASSPORT_SUBTITLE,
   PASSPORT_TITLE,
-  passportAppliedLabel,
-  passportDueLabel,
-  passportNextDoseLabel,
   passportOverview,
+  passportStatusLine,
 } from "@/lib/passport";
 import { todayIsoDate } from "@/lib/format";
 
@@ -30,7 +28,9 @@ export async function GET(
   }
 
   const { dog, tutor, items } = certificate;
-  const overview = passportOverview(items, todayIsoDate());
+  const today = todayIsoDate();
+  const overview = passportOverview(items, today);
+  const statusLine = passportStatusLine(items, today);
   const logoSrc = kintalLogoDataUrl();
 
   return new ImageResponse(
@@ -145,97 +145,13 @@ export async function GET(
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            marginTop: 18,
-            backgroundColor: "#FFFFFF",
-            border: "1px solid #D1C7BD",
-            borderLeft: "8px solid #F2B705",
-            borderRadius: 12,
-            padding: "16px 20px",
+            marginTop: 28,
+            fontSize: 22,
+            fontWeight: 700,
+            color: overview.allGood ? "#2E7D32" : "#E65100",
           }}
         >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: 14,
-              fontWeight: 700,
-              letterSpacing: 1,
-              textTransform: "uppercase",
-              color: "#8C7B70",
-            }}
-          >
-            <div style={{ display: "flex" }}>Próxima dose</div>
-            <div
-              style={{
-                display: "flex",
-                color: overview.urgent ? "#F2B705" : "#8C7B70",
-              }}
-            >
-              {overview.nextBadge ?? ""}
-            </div>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              marginTop: 6,
-              fontSize: 28,
-              fontWeight: 700,
-              color: "#3A2C24",
-            }}
-          >
-            {passportNextDoseLabel(overview.next)}
-          </div>
-          <div style={{ display: "flex", marginTop: 10 }}>
-            <div style={{ display: "flex", flexDirection: "column", marginRight: 40 }}>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                  color: "#8C7B70",
-                }}
-              >
-                Aplicada em
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 20,
-                  fontWeight: 600,
-                  color: "#3A2C24",
-                }}
-              >
-                {passportAppliedLabel(overview.next)}
-              </div>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                  color: "#8C7B70",
-                }}
-              >
-                Próxima dose
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 20,
-                  fontWeight: 600,
-                  color: "#3A2C24",
-                }}
-              >
-                {passportDueLabel(overview.next)}
-              </div>
-            </div>
-          </div>
+          {statusLine}
         </div>
         </div>
       </div>

@@ -6,6 +6,28 @@
         "cardTemplateOverride": {
           "cardRowTemplateInfos": [
             {
+              "twoItems": {
+                "startItem": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.linksModuleData.uris['certificate']"
+                      }
+                    ]
+                  }
+                },
+                "endItem": {
+                  "firstValue": {
+                    "fields": [
+                      {
+                        "fieldPath": "object.linksModuleData.uris['teleconsult']"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            {
               "oneItem": {
                 "item": {
                   "firstValue": {
@@ -15,6 +37,116 @@
                       }
                     ]
                   }
+                }
+              }
+            }
+          ]
+        },
+        "listTemplateOverride": {
+          "firstRowOption": {
+            "fieldOption": {
+              "fields": [
+                {
+                  "fieldPath": "object.header"
+                }
+              ]
+            }
+          },
+          "secondRowOption": {
+            "fields": [
+              {
+                "fieldPath": "object.textModulesData['status']"
+              }
+            ]
+          }
+        },
+        "detailsTemplateOverride": {
+          "detailsItemInfos": [
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_1']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_2']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_3']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_4']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_5']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_6']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_7']"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "item": {
+                "firstValue": {
+                  "fields": [
+                    {
+                      "fieldPath": "object.textModulesData['vacina_8']"
+                    }
+                  ]
                 }
               }
             }
@@ -45,7 +177,7 @@
       "subheader": {
         "defaultValue": {
           "language": "pt-BR",
-          "value": "⚠️ Atenção — 1 vacina vencendo"
+          "value": "Atenção — 1 vacina vencendo"
         }
       },
       "logo": {
@@ -62,12 +194,6 @@
       "heroImage": {
         "sourceUri": {
           "uri": "https://next-e2.vercel.app/api/certificado/{dogId}/pass"
-        },
-        "contentDescription": {
-          "defaultValue": {
-            "language": "pt-BR",
-            "value": "Passaporte de Vacinação"
-          }
         }
       },
       "barcode": {
@@ -77,24 +203,19 @@
       },
       "textModulesData": [
         {
+          "id": "status",
+          "header": "Passaporte",
+          "body": "Atenção — 1 vacina vencendo"
+        },
+        {
           "id": "proxima_dose",
-          "header": "PRÓXIMA DOSE",
+          "header": "Próxima dose",
           "body": "Antirrábica — 15/10/2024"
         },
         {
-          "id": "v10",
+          "id": "vacina_1",
           "header": "V10 (POLIVALENTE)",
           "body": "Aplicada em 10/08/2023 — Válida"
-        },
-        {
-          "id": "giardia",
-          "header": "GIÁRDIA",
-          "body": "Aplicada em 10/08/2023 — Vencendo"
-        },
-        {
-          "id": "leishmaniose",
-          "header": "LEISHMANIOSE",
-          "body": "Aplicada em 05/02/2023 — Válida"
         }
       ],
       "linksModuleData": {
@@ -102,34 +223,14 @@
           {
             "id": "certificate",
             "uri": "https://next-e2.vercel.app/certificado/{dogId}",
-            "description": "https://next-e2.vercel.app/certificado/{dogId}",
-            "localizedDescription": {
-              "defaultValue": {
-                "language": "pt-BR",
-                "value": "Abrir certificado na web"
-              }
-            }
+            "description": "Ver certificado"
           },
           {
-            "id": "agendar_teleconsulta",
+            "id": "teleconsult",
             "uri": "https://next-e2.vercel.app/videocall",
-            "description": "Tele-consulta",
-            "localizedDescription": {
-              "defaultValue": {
-                "language": "pt-BR",
-                "value": "Tele-consulta"
-              }
-            }
+            "description": "Tele-consulta"
           }
         ]
-      },
-      "validTimeInterval": {
-        "start": {
-          "date": "2023-10-15T00:00:00Z"
-        },
-        "end": {
-          "date": "2024-10-15T23:59:59Z"
-        }
       }
     }
   ]

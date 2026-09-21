@@ -62,7 +62,7 @@ type GenericPass = {
       localizedDescription: LocalizedString;
     }[];
   };
-  appLinkData: {
+  appLinkData?: {
     androidAppLinkInfo: {
       appTarget: { targetUri: { uri: string; description: string } };
     };
@@ -185,8 +185,8 @@ function earliestApplied(items: SanitaryItem[]) {
 }
 
 function sanitaryModules(items: SanitaryItem[], today: string) {
-  return items.slice(0, 8).map((item) => ({
-    id: `item-${item.sanitary_item_id}`,
+  return items.slice(0, 8).map((item, index) => ({
+    id: `vacina_${index + 1}`,
     header: clip(item.item.toUpperCase(), 40),
     body: clip(
       `Aplicada em ${formatDate(item.valid_from)} — ${sanitaryItemStatusLabel(
@@ -214,6 +214,7 @@ function buildGenericObject(
     String(items.length),
   ].join("-");
   const started = earliestApplied(items);
+  const statusLine = passportStatusLine(items, today);
 
   const object: GenericPass = {
     id: objectIdFor(issuerId, dog.dog_id),
@@ -224,7 +225,7 @@ function buildGenericObject(
     notifyPreference: "NOTIFY_ON_UPDATE",
     cardTitle: loc(PASSPORT_TITLE),
     header: loc(clip(dog.name, 40)),
-    subheader: loc(clip(passportStatusLine(items, today), 40)),
+    subheader: loc(clip(statusLine, 40)),
     logo: {
       sourceUri: {
         uri: walletAssetUrl(PASSPORT_LOGO_PATH, "black"),
@@ -247,8 +248,13 @@ function buildGenericObject(
     },
     textModulesData: [
       {
+        id: "status",
+        header: "Passaporte",
+        body: clip(statusLine, 40),
+      },
+      {
         id: "proxima_dose",
-        header: "PRÓXIMA DOSE",
+        header: "Próxima dose",
         body: overview.next
           ? clip(
               `${overview.next.item} — ${formatDate(overview.next.valid_to)}`,
@@ -263,35 +269,16 @@ function buildGenericObject(
         {
           id: "certificate",
           uri: certificateUrl,
-          description: certificateUrl,
-          localizedDescription: loc("Abrir certificado na web"),
+          description: "Ver certificado",
+          localizedDescription: loc("Ver certificado"),
         },
         {
           id: "teleconsult",
           uri: TELECONSULT_URL,
-          description: TELECONSULT_URL,
+          description: "Tele-consulta",
           localizedDescription: loc("Tele-consulta"),
         },
       ],
-    },
-    appLinkData: {
-      androidAppLinkInfo: {
-        appTarget: {
-          targetUri: {
-            uri: certificateUrl,
-            description: "Certificado de vacinação na web",
-          },
-        },
-      },
-      webAppLinkInfo: {
-        appTarget: {
-          targetUri: {
-            uri: certificateUrl,
-            description: "Certificado de vacinação na web",
-          },
-        },
-      },
-      displayText: loc("Ver certificado"),
     },
   };
 
