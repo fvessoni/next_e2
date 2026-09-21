@@ -1,5 +1,7 @@
 import SideNav from "../components/sidenav";
 
+export const maxDuration = 30;
+
 export default function MainLayout({
   children,
 }: {

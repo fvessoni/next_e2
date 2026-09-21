@@ -103,7 +103,7 @@ export async function updateDogAction(dogId: number, formData: FormData) {
 
   revalidatePath("/caes");
   revalidatePath("/tutores");
-  scheduleGoogleWalletSync(updated.dog_id);
+  await scheduleGoogleWalletSync(updated.dog_id);
   return { success: true as const };
 }
 
@@ -126,6 +126,6 @@ export async function deleteDogAction(dogId: number) {
 
   revalidatePath("/caes");
   revalidatePath("/tutores");
-  scheduleGoogleWalletExpire(dogId);
+  await scheduleGoogleWalletExpire(dogId);
   return { success: true as const };
 }

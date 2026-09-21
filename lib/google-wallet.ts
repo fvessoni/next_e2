@@ -1,7 +1,6 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { importPKCS8, SignJWT } from "jose";
-import { after } from "next/server";
 import {
   certificatePath,
   getCertificateUrl,
@@ -31,6 +30,7 @@ type GenericPass = {
   genericType: "GENERIC_OTHER";
   hexBackgroundColor: string;
   state: "ACTIVE";
+  notifyPreference?: "NOTIFY_ON_UPDATE";
   cardTitle: LocalizedString;
   header: LocalizedString;
   subheader: LocalizedString;
@@ -144,15 +144,24 @@ function nextExpiry(items: SanitaryItem[]) {
     .valid_to;
 }
 
-function sanitarySummary(items: SanitaryItem[], today: string) {
-  if (items.length === 0) return "Nenhum item sanitário";
-  return items
-    .slice(0, 4)
-    .map((item) => {
-      const status = isSanitaryItemCurrent(item, today) ? "vigente" : "vencido";
-      return `${item.item} (${status} até ${formatDate(item.valid_to)})`;
-    })
-    .join(" · ");
+function sanitaryModules(items: SanitaryItem[], today: string) {
+  if (items.length === 0) {
+    return [
+      {
+        id: "sanitary",
+        header: "Sanitário",
+        body: "Nenhum item sanitário",
+      },
+    ];
+  }
+  return items.slice(0, 6).map((item) => ({
+    id: `sanitary-${item.sanitary_item_id}`,
+    header: clip(item.item, 40),
+    body: clip(
+      `${isSanitaryItemCurrent(item, today) ? "Vigente" : "Vencido"} até ${formatDate(item.valid_to)}`,
+      60,
+    ),
+  }));
 }
 
 function buildGenericObject(
@@ -176,6 +185,7 @@ function buildGenericObject(
     genericType: "GENERIC_OTHER",
     hexBackgroundColor: "#171717",
     state: "ACTIVE",
+    notifyPreference: "NOTIFY_ON_UPDATE",
     cardTitle: loc(PASS_TITLE),
     header: loc(clip(dog.name, 40)),
     subheader: loc("Certificado de vacinação"),
@@ -191,12 +201,8 @@ function buildGenericObject(
         header: "Cão",
         body: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 60),
       },
-      {
-        id: "sanitary",
-        header: "Sanitário",
-        body: clip(sanitarySummary(items, today), 120),
-      },
       { id: "validade", header: "Validade", body: clip(validityLabel, 40) },
+      ...sanitaryModules(items, today),
     ],
     linksModuleData: {
       uris: [
@@ -264,6 +270,7 @@ async function getAccessToken(credentials: WalletCredentials) {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
+    signal: AbortSignal.timeout(12_000),
   });
   const json = (await response.json()) as {
     access_token?: string;
@@ -297,6 +304,7 @@ async function walletFetch(
       "Content-Type": "application/json",
     },
     body: payload == null ? undefined : JSON.stringify(payload),
+    signal: AbortSignal.timeout(12_000),
   });
   const text = await response.text();
   return { response, text };
@@ -422,6 +430,7 @@ export async function syncGoogleWalletPass(dogId: number) {
     const objectId = objectIdFor(credentials.issuerId, dogId);
     if (!(await walletObjectExists(token, objectId))) return;
     await writeWalletPass(dogId, await passCertificateUrl(dogId));
+    console.info("Google Wallet sync ok", dogId);
   } catch (error) {
     console.error("Google Wallet sync failed", dogId, error);
   }
@@ -452,30 +461,22 @@ export async function expireGoogleWalletPass(dogId: number) {
   }
 }
 
-export function scheduleGoogleWalletSync(dogId: number) {
-  after(() => {
-    void syncGoogleWalletPass(dogId);
-  });
+export async function scheduleGoogleWalletSync(dogId: number) {
+  await syncGoogleWalletPass(dogId);
 }
 
-export function scheduleGoogleWalletSyncForDogs(dogIds: number[]) {
+export async function scheduleGoogleWalletSyncForDogs(dogIds: number[]) {
   if (dogIds.length === 0) return;
-  after(async () => {
-    await Promise.all(dogIds.map((id) => syncGoogleWalletPass(id)));
-  });
+  await Promise.all(dogIds.map((id) => syncGoogleWalletPass(id)));
 }
 
-export function scheduleGoogleWalletExpire(dogId: number) {
-  after(() => {
-    void expireGoogleWalletPass(dogId);
-  });
+export async function scheduleGoogleWalletExpire(dogId: number) {
+  await expireGoogleWalletPass(dogId);
 }
 
-export function scheduleGoogleWalletExpireForDogs(dogIds: number[]) {
+export async function scheduleGoogleWalletExpireForDogs(dogIds: number[]) {
   if (dogIds.length === 0) return;
-  after(async () => {
-    await Promise.all(dogIds.map((id) => expireGoogleWalletPass(id)));
-  });
+  await Promise.all(dogIds.map((id) => expireGoogleWalletPass(id)));
 }
 
 export async function createGoogleWalletSaveUrl(

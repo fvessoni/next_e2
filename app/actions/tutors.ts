@@ -93,7 +93,7 @@ export async function updateTutorAction(tutorId: number, formData: FormData) {
 
   const dogs = await getDogsByTutorId(tutorId);
   revalidatePath("/tutores");
-  scheduleGoogleWalletSyncForDogs(dogs.map((dog) => dog.dog_id));
+  await scheduleGoogleWalletSyncForDogs(dogs.map((dog) => dog.dog_id));
   return { success: true as const };
 }
 
@@ -116,6 +116,6 @@ export async function deleteTutorAction(tutorId: number) {
   }
 
   revalidatePath("/tutores");
-  scheduleGoogleWalletExpireForDogs(dogs.map((dog) => dog.dog_id));
+  await scheduleGoogleWalletExpireForDogs(dogs.map((dog) => dog.dog_id));
   return { success: true as const };
 }
