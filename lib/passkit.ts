@@ -7,6 +7,8 @@ import {
   passportStatusLine,
   sanitaryItemStatus,
   sanitaryItemStatusLabel,
+  TELECONSULT_BUTTON_LABEL,
+  TELECONSULT_URL,
 } from "@/lib/passport";
 import { DOG_SIZE_LABELS } from "@/lib/types";
 
@@ -26,6 +28,9 @@ type PassTemplate = {
     payload?: string;
     altText?: string;
   };
+  imageIds?: { thumbnail?: string };
+  links?: PassLink[];
+  appleWalletSettings?: { appLaunchUrl?: string };
   data?: {
     dataFields?: Array<{
       uniqueName?: string;
@@ -37,11 +42,24 @@ type PassTemplate = {
   };
 };
 
+type PassLink = {
+  id?: string;
+  url?: string;
+  title?: string;
+  type?: string;
+  usage?: string[];
+  position?: number;
+};
+
 type MemberRecord = {
   id: string;
   externalId?: string;
   programId?: string;
   tierId?: string;
+  profileImage?: string;
+  passOverrides?: {
+    imageIds?: Record<string, string>;
+  };
 };
 
 let readyTemplate: Promise<void> | null = null;
@@ -208,12 +226,34 @@ async function ensureTemplate(templateId: string) {
   await readyTemplate;
 }
 
+function fieldSection(template: PassTemplate, uniqueName: string) {
+  return template.data?.dataFields?.find((field) => field.uniqueName === uniqueName)
+    ?.appleWalletFieldRenderOptions?.positionSettings?.section;
+}
+
+async function ensureTeleconsultLink(template: PassTemplate) {
+  const existing = template.links?.find((link) => link.url === TELECONSULT_URL);
+  if (existing?.id) return;
+  const created = await passkitFetch("POST", "/link", {
+    url: TELECONSULT_URL,
+    title: TELECONSULT_BUTTON_LABEL,
+    type: "URI_WEB",
+    usage: ["USAGE_APPLE_WALLET", "USAGE_GOOGLE_PAY"],
+  });
+  if (created.status !== 200) {
+    throw new Error(`PassKit link failed (${created.status})`);
+  }
+  template.links = [...(template.links ?? []), parseJson<PassLink>(created.text)];
+}
+
 async function shapeTemplate(templateId: string) {
   const template = await loadTemplate(templateId);
   const fields = template.data?.dataFields ?? [];
   const already =
     template.description === "Passaporte de vacinação" &&
-    fields.some((field) => field.uniqueName === "meta.status");
+    fieldSection(template, "meta.vacinas") === "AUXILIARY_FIELDS" &&
+    !template.imageIds?.thumbnail &&
+    template.links?.some((link) => link.url === TELECONSULT_URL);
   if (already) return;
 
   hideField(template, "members.member.points");
@@ -237,8 +277,8 @@ async function shapeTemplate(templateId: string) {
     textField("meta.status", "Status", "HEADER_FIELDS", 0),
     textField("meta.breed", "Raça", "SECONDARY_FIELDS", 0),
     textField("meta.tutor", "Tutor", "SECONDARY_FIELDS", 1),
-    textField("meta.proxima", "Próxima dose", "AUXILIARY_FIELDS", 0),
-    textField("meta.vacinas", "Vacinas", "BACK_FIELDS", 0),
+    textField("meta.vacinas", "Vacinas", "AUXILIARY_FIELDS", 0),
+    textField("meta.proxima", "Próxima dose", "BACK_FIELDS", 0),
     textField("meta.certUrl", "Certificado", "BACK_FIELDS", 1),
   );
   template.description = "Passaporte de vacinação";
@@ -255,6 +295,12 @@ async function shapeTemplate(templateId: string) {
     payload: "${meta.certUrl}",
     altText: "Certificado",
   };
+  template.imageIds = { ...template.imageIds, thumbnail: "" };
+  template.appleWalletSettings = {
+    ...template.appleWalletSettings,
+    appLaunchUrl: TELECONSULT_URL,
+  };
+  await ensureTeleconsultLink(template);
   const updated = await passkitFetch("PUT", "/template", template);
   if (updated.status !== 200) {
     throw new Error(`PassKit template update failed (${updated.status})`);
@@ -331,12 +377,26 @@ export async function createAppleWalletPassUrl(dogId: number) {
   };
 
   const existing = await findMember(program, externalId);
+  const withoutPhoto = {
+    profileImage: "",
+    passOverrides: {
+      ...existing?.passOverrides,
+      imageIds: {
+        ...existing?.passOverrides?.imageIds,
+        thumbnail: "",
+      },
+    },
+  };
   const saved = existing
     ? await passkitFetch("PUT", "/members/member", {
         ...memberBody,
+        ...withoutPhoto,
         id: existing.id,
       })
-    : await passkitFetch("POST", "/members/member", memberBody);
+    : await passkitFetch("POST", "/members/member", {
+        ...memberBody,
+        ...withoutPhoto,
+      });
   if (saved.status !== 200) {
     throw new Error(`PassKit pass failed (${saved.status})`);
   }
