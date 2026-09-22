@@ -1,6 +1,5 @@
 import {
   PASSPORT_BACKGROUND,
-  PASSPORT_TITLE,
   WALLET_BUTTON_DISPLAY,
 } from "@/lib/passport";
 
@@ -87,8 +86,7 @@ export function WalletPreviewCard({
                 height={96}
                 className="h-24 w-24 rounded-full object-cover"
               />
-              <p className="mt-5 text-lg font-medium">{PASSPORT_TITLE}</p>
-              <p className="mt-1 text-sm text-white/70">{statusLine}</p>
+              <p className="mt-5 text-sm text-white/70">{statusLine}</p>
               <p className="mt-1 text-[28px] font-semibold leading-tight">
                 {dogName}
               </p>
@@ -101,9 +99,8 @@ export function WalletPreviewCard({
                 </p>
                 <p className="mt-0.5 text-[15px]">{nextDose}</p>
               </div>
-              <div>
-                <p className="text-[11px] font-medium text-white/55">Vacinas</p>
-                <p className="mt-0.5 whitespace-pre-line text-[15px] leading-snug">
+              <div className="pt-2">
+                <p className="whitespace-pre-line text-[15px] leading-snug">
                   {vaccineBody}
                 </p>
               </div>

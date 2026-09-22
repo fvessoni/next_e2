@@ -190,7 +190,7 @@ function vaccineModules(items: SanitaryItem[], today: string) {
     return [
       {
         id: "vacinas",
-        header: "Vacinas",
+        header: " ",
         body: "Nenhum item sanitário",
       },
     ];
@@ -198,7 +198,7 @@ function vaccineModules(items: SanitaryItem[], today: string) {
   return [
     {
       id: "vacinas",
-      header: "Vacinas",
+      header: " ",
       body: clip(
         items
           .slice(0, 8)
@@ -230,7 +230,7 @@ function buildGenericObject(
     overview.next?.item ?? "",
     overview.next?.valid_to ?? "",
     String(items.length),
-    "alertred",
+    "qrspace",
   ].join("-");
   const started = earliestApplied(items);
   const statusLine = passportStatusLine(items, today);
