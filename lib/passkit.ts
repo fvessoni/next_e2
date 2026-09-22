@@ -251,7 +251,9 @@ async function shapeTemplate(templateId: string) {
   const fields = template.data?.dataFields ?? [];
   const already =
     template.description === "Passaporte de vacinação" &&
-    fieldSection(template, "meta.vacinas") === "AUXILIARY_FIELDS" &&
+    fieldSection(template, "meta.vacinas") === "SECONDARY_FIELDS" &&
+    fieldSection(template, "meta.vet") === "SECONDARY_FIELDS" &&
+    fieldSection(template, "meta.breed") === "HEADER_FIELDS" &&
     !template.imageIds?.thumbnail &&
     template.links?.some((link) => link.url === TELECONSULT_URL);
   if (already) return;
@@ -275,9 +277,10 @@ async function shapeTemplate(templateId: string) {
   );
   template.data.dataFields.push(
     textField("meta.status", "Status", "HEADER_FIELDS", 0),
-    textField("meta.breed", "Raça", "SECONDARY_FIELDS", 0),
-    textField("meta.tutor", "Tutor", "SECONDARY_FIELDS", 1),
-    textField("meta.vacinas", "Vacinas", "AUXILIARY_FIELDS", 0),
+    textField("meta.breed", "Raça", "HEADER_FIELDS", 1),
+    textField("meta.tutor", "Tutor", "HEADER_FIELDS", 2),
+    textField("meta.vacinas", "Vacinas", "SECONDARY_FIELDS", 0),
+    textField("meta.vet", "Tele-consulta veterinária", "SECONDARY_FIELDS", 1),
     textField("meta.proxima", "Próxima dose", "BACK_FIELDS", 0),
     textField("meta.certUrl", "Certificado", "BACK_FIELDS", 1),
   );
@@ -363,6 +366,7 @@ export async function createAppleWalletPassUrl(dogId: number) {
     person: { displayName: clip(dog.name, 40) },
     metaData: {
       status: clip(passportStatusLine(items, today), 40),
+      vet: TELECONSULT_URL,
       breed: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 40),
       tutor: clip(tutor.name, 40),
       proxima: clip(
