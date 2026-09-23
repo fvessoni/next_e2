@@ -58,7 +58,6 @@ export default async function WalletPreviewPage({
         statusLine={passportStatusLine(items, today)}
         breed={`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`}
         tutorName={tutor.name}
-        nextDose={nextDose}
         vaccines={vaccines.map(
           (vaccine) => `${vaccine.name} — ${vaccine.detail}`,
         )}

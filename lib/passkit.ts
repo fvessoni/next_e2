@@ -1,4 +1,5 @@
 import { SignJWT } from "jose";
+import { applePassStripPng } from "@/lib/apple-pass-face";
 import { getVaccinationCertificate } from "@/lib/certificate";
 import { formatDate, todayIsoDate } from "@/lib/format";
 import {
@@ -28,9 +29,10 @@ type PassTemplate = {
     payload?: string;
     altText?: string;
   };
-  imageIds?: { thumbnail?: string };
+  imageIds?: Record<string, string>;
   links?: PassLink[];
   appleWalletSettings?: {
+    passType?: string;
     appLaunchUrl?: string;
     featuredActions?: unknown[];
   };
@@ -147,6 +149,7 @@ function textField(
   label: string,
   section: string,
   priority: number,
+  dataType = "TEXT",
 ) {
   return {
     uniqueName,
@@ -155,7 +158,7 @@ function textField(
     isRequired: false,
     label,
     localizedLabel: null,
-    dataType: "TEXT",
+    dataType,
     defaultValue: "",
     localizedDefaultValue: null,
     validation: "",
@@ -254,10 +257,13 @@ async function shapeTemplate(templateId: string) {
   const fields = template.data?.dataFields ?? [];
   const already =
     template.description === "Passaporte de vacinação" &&
+    template.appleWalletSettings?.passType === "STORE_CARD" &&
     fieldSection(template, "meta.vacinas") === "BACK_FIELDS" &&
-    fieldSection(template, "meta.breed") === "SECONDARY_FIELDS" &&
-    !fields.some((field) => field.uniqueName === "meta.vet") &&
+    fieldSection(template, "meta.vet") === "SECONDARY_FIELDS" &&
+    fieldSection(template, "meta.breed") === "BACK_FIELDS" &&
+    !(template.appleWalletSettings?.featuredActions?.length) &&
     !template.imageIds?.thumbnail &&
+    !template.imageIds?.strip &&
     template.links?.some((link) => link.url === TELECONSULT_URL);
   if (already) return;
 
@@ -280,11 +286,18 @@ async function shapeTemplate(templateId: string) {
   );
   template.data.dataFields.push(
     textField("meta.status", "Status", "HEADER_FIELDS", 0),
-    textField("meta.breed", "Raça", "SECONDARY_FIELDS", 0),
-    textField("meta.tutor", "Tutor", "SECONDARY_FIELDS", 1),
-    textField("meta.vacinas", "Vacinas", "BACK_FIELDS", 0),
-    textField("meta.proxima", "Próxima dose", "BACK_FIELDS", 1),
-    textField("meta.certUrl", "Certificado", "BACK_FIELDS", 2),
+    textField(
+      "meta.vet",
+      TELECONSULT_BUTTON_LABEL,
+      "SECONDARY_FIELDS",
+      0,
+      "URL",
+    ),
+    textField("meta.breed", "Raça", "BACK_FIELDS", 0),
+    textField("meta.tutor", "Tutor", "BACK_FIELDS", 1),
+    textField("meta.vacinas", "Vacinas", "BACK_FIELDS", 2),
+    textField("meta.proxima", "Próxima dose", "BACK_FIELDS", 3),
+    textField("meta.certUrl", "Certificado", "BACK_FIELDS", 4),
   );
   template.description = "Passaporte de vacinação";
   template.organizationName = "Kintal Vax";
@@ -300,9 +313,15 @@ async function shapeTemplate(templateId: string) {
     payload: "${meta.certUrl}",
     altText: "Certificado",
   };
-  template.imageIds = { ...template.imageIds, thumbnail: "" };
+  template.imageIds = {
+    ...template.imageIds,
+    thumbnail: "",
+    strip: "",
+    background: "",
+  };
   template.appleWalletSettings = {
     ...template.appleWalletSettings,
+    passType: "STORE_CARD",
     appLaunchUrl: TELECONSULT_URL,
     featuredActions: [],
   };
@@ -362,6 +381,36 @@ export async function createAppleWalletPassUrl(dogId: number) {
   await ensureTemplate(templateId);
 
   const externalId = `dog-${dog.dog_id}`;
+  const stripPng = await applePassStripPng({
+    breed: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 40),
+    tutorName: clip(tutor.name, 40),
+    vaccines: vaccineText.split("\n").filter(Boolean),
+  });
+  const uploaded = await passkitFetch("POST", "/images", {
+    name: `dog-${dog.dog_id}-vaccines`,
+    imageData: { strip: stripPng.toString("base64") },
+  });
+  if (uploaded.status !== 200) {
+    throw new Error(
+      `PassKit image failed (${uploaded.status}) ${uploaded.text.slice(0, 240)}`,
+    );
+  }
+  const uploadedImage = parseJson<{
+    id?: string;
+    strip?: string;
+    result?: { id?: string; strip?: string };
+  }>(uploaded.text);
+  const stripId =
+    uploadedImage.strip ||
+    uploadedImage.id ||
+    uploadedImage.result?.strip ||
+    uploadedImage.result?.id;
+  if (!stripId) {
+    throw new Error(
+      `PassKit image was not created ${uploaded.text.slice(0, 240)}`,
+    );
+  }
+
   const memberBody = {
     programId: program,
     tierId: tier,
@@ -369,6 +418,7 @@ export async function createAppleWalletPassUrl(dogId: number) {
     person: { displayName: clip(dog.name, 40) },
     metaData: {
       status: clip(passportStatusLine(items, today), 40),
+      vet: TELECONSULT_URL,
       breed: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 40),
       tutor: clip(tutor.name, 40),
       proxima: clip(
@@ -390,6 +440,8 @@ export async function createAppleWalletPassUrl(dogId: number) {
       imageIds: {
         ...existing?.passOverrides?.imageIds,
         thumbnail: "",
+        background: "",
+        strip: stripId,
       },
     },
   };
