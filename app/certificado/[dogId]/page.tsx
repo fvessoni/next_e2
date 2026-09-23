@@ -15,7 +15,7 @@ import {
   isSanitaryItemCurrent,
   todayIsoDate,
 } from "@/lib/format";
-import { btnOutline, cardClass, pageSubtitle, tableHeadClass } from "@/lib/ui";
+import { cardClass, pageSubtitle, tableHeadClass } from "@/lib/ui";
 import { DOG_SIZE_LABELS, type SanitaryItem } from "@/lib/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -88,12 +88,6 @@ export default async function VaccinationCertificatePage({
           {showAppleWalletButton ? (
             <AddToAppleWalletButton dogId={dog.dog_id} />
           ) : null}
-          <a
-            href={`/wallet-preview/${dog.dog_id}#apple`}
-            className={`${btnOutline} print:hidden`}
-          >
-            Prévia Apple
-          </a>
           {showWalletButton ? (
             <AddToGoogleWalletButton dogId={dog.dog_id} />
           ) : null}

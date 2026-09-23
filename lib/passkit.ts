@@ -261,6 +261,7 @@ async function shapeTemplate(templateId: string) {
     fieldSection(template, "meta.vacinas") === "BACK_FIELDS" &&
     fieldSection(template, "meta.vet") === "SECONDARY_FIELDS" &&
     fieldSection(template, "meta.breed") === "BACK_FIELDS" &&
+    fieldSection(template, "person.displayName") === "FIELD_SECTION_DO_NOT_USE" &&
     !(template.appleWalletSettings?.featuredActions?.length) &&
     !template.imageIds?.thumbnail &&
     !template.imageIds?.strip &&
@@ -269,15 +270,7 @@ async function shapeTemplate(templateId: string) {
 
   hideField(template, "members.member.points");
   hideField(template, "members.tier.name");
-  const name = fields.find((field) => field.uniqueName === "person.displayName");
-  if (name) {
-    name.label = "Cão";
-    const position = name.appleWalletFieldRenderOptions?.positionSettings;
-    if (position) {
-      position.section = "PRIMARY_FIELDS";
-      position.priority = 0;
-    }
-  }
+  hideField(template, "person.displayName");
   template.data = template.data ?? {};
   template.data.dataFields = fields.filter(
     (field) =>
@@ -344,15 +337,12 @@ async function findMember(program: string, externalId: string) {
   return parseJson<MemberRecord>(found.text);
 }
 
-export async function createAppleWalletPassUrl(dogId: number) {
-  if (!isPasskitConfigured()) return null;
-  const certificate = await getVaccinationCertificate(dogId);
-  if (!certificate) return null;
-
-  const { dog, tutor, items } = certificate;
-  const today = todayIsoDate();
-  const overview = passportOverview(items, today);
-  const next = overview.next;
+function passStripInput(
+  dog: { name: string; breed: string; size: keyof typeof DOG_SIZE_LABELS },
+  tutorName: string,
+  items: Parameters<typeof passportOverview>[0],
+  today: string,
+) {
   const vaccineLines =
     items.length === 0
       ? "Nenhum item sanitário"
@@ -365,6 +355,39 @@ export async function createAppleWalletPassUrl(dogId: number) {
           )
           .join("\n");
   const vaccineText = clip(vaccineLines, 2000);
+  return {
+    dogName: clip(dog.name, 40),
+    breed: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 40),
+    tutorName: clip(tutorName, 40),
+    vaccines: vaccineText.split("\n").filter(Boolean),
+    vaccineText,
+  };
+}
+
+export async function createApplePassStripPng(dogId: number) {
+  const certificate = await getVaccinationCertificate(dogId);
+  if (!certificate) return null;
+  const { dog, tutor, items } = certificate;
+  const { vaccineText: _vaccineText, ...strip } = passStripInput(
+    dog,
+    tutor.name,
+    items,
+    todayIsoDate(),
+  );
+  return applePassStripPng(strip);
+}
+
+export async function createAppleWalletPassUrl(dogId: number) {
+  if (!isPasskitConfigured()) return null;
+  const certificate = await getVaccinationCertificate(dogId);
+  if (!certificate) return null;
+
+  const { dog, tutor, items } = certificate;
+  const today = todayIsoDate();
+  const overview = passportOverview(items, today);
+  const next = overview.next;
+  const stripInput = passStripInput(dog, tutor.name, items, today);
+  const vaccineText = stripInput.vaccineText;
   const certificateUrl = `${PRODUCTION_ORIGIN}/certificado/${dog.dog_id}`;
   const program = await programId();
   const tier = tierId();
@@ -381,11 +404,8 @@ export async function createAppleWalletPassUrl(dogId: number) {
   await ensureTemplate(templateId);
 
   const externalId = `dog-${dog.dog_id}`;
-  const stripPng = await applePassStripPng({
-    breed: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 40),
-    tutorName: clip(tutor.name, 40),
-    vaccines: vaccineText.split("\n").filter(Boolean),
-  });
+  const { vaccineText: _ignored, ...strip } = stripInput;
+  const stripPng = await applePassStripPng(strip);
   const uploaded = await passkitFetch("POST", "/images", {
     name: `dog-${dog.dog_id}-vaccines`,
     imageData: { strip: stripPng.toString("base64") },

@@ -1,4 +1,5 @@
 import { getVaccinationCertificate } from "@/lib/certificate";
+import QRCode from "qrcode";
 import { formatDate, todayIsoDate } from "@/lib/format";
 import {
   passportOverview,
@@ -6,7 +7,6 @@ import {
   sanitaryItemStatus,
   sanitaryItemStatusLabel,
 } from "@/lib/passport";
-import { DOG_SIZE_LABELS } from "@/lib/types";
 import { notFound } from "next/navigation";
 import { AppleWalletPreview } from "../apple-wallet-preview";
 import { WalletPreviewCard } from "../wallet-preview-card";
@@ -41,6 +41,13 @@ export default async function WalletPreviewPage({
   const nextDose = overview.next
     ? `${overview.next.item} — ${formatDate(overview.next.valid_to)}`
     : "Nenhum item sanitário";
+  const certificateUrl = `https://next-e2.vercel.app/certificado/${dog.dog_id}`;
+  const qrSrc = await QRCode.toDataURL(certificateUrl, {
+    margin: 0,
+    width: 256,
+    errorCorrectionLevel: "M",
+    color: { dark: "#111111", light: "#ffffff" },
+  });
 
   return (
     <>
@@ -54,14 +61,10 @@ export default async function WalletPreviewPage({
         vaccines={vaccines}
       />
       <AppleWalletPreview
-        dogName={dog.name}
         statusLine={passportStatusLine(items, today)}
-        breed={`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`}
-        tutorName={tutor.name}
-        vaccines={vaccines.map(
-          (vaccine) => `${vaccine.name} — ${vaccine.detail}`,
-        )}
+        stripUrl={`/api/certificado/${dog.dog_id}/apple-strip`}
         videocallUrl="/videocall"
+        qrSrc={qrSrc}
       />
     </>
   );
