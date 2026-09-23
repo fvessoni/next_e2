@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
+import { APPLE_BACK_HINT, TELECONSULT_BUTTON_LABEL } from "@/lib/passport";
 
 const WIDTH = 1125;
 const HEIGHT = 432;
+const LABEL_SIZE = 30;
 
 export async function applePassStripPng({
   dogName,
@@ -15,9 +17,12 @@ export async function applePassStripPng({
   vaccines: string[];
 }) {
   const lines = vaccines.length > 0 ? vaccines : ["Nenhum item sanitário"];
-  const lineSize = lines.length > 5 ? 20 : lines.length > 3 ? 24 : 30;
-  const lineBox = lines.length > 5 ? 22 : lines.length > 3 ? 26 : 32;
-  const lineGap = lines.length > 5 ? 4 : lines.length > 3 ? 6 : 12;
+  const tight = lines.length > 3;
+  const lineSize = lines.length > 5 ? 18 : tight ? 22 : 26;
+  const lineBox = lines.length > 5 ? 20 : tight ? 24 : 26;
+  const lineGap = lines.length > 5 ? 3 : tight ? 5 : 6;
+  const nameGap = tight ? 16 : 24;
+  const teleGap = tight ? 16 : 24;
 
   const response = new ImageResponse(
     (
@@ -30,15 +35,16 @@ export async function applePassStripPng({
           backgroundColor: "#1a1a1a",
           color: "#ffffff",
           fontFamily: "Arial, sans-serif",
-          padding: "168px 48px 8px",
+          padding: "148px 48px 4px",
         }}
       >
         <div
           style={{
             display: "flex",
-            height: 58,
+            height: 48,
+            flexShrink: 0,
             alignItems: "center",
-            fontSize: 56,
+            fontSize: 52,
             fontWeight: 700,
             lineHeight: 1,
             color: "#ffffff",
@@ -46,13 +52,16 @@ export async function applePassStripPng({
         >
           {dogName}
         </div>
-        <div style={{ display: "flex", height: 32, width: "100%" }} />
+        <div
+          style={{ display: "flex", height: nameGap, width: "100%", flexShrink: 0 }}
+        />
         <div
           style={{
             display: "flex",
-            height: 22,
+            height: 30,
+            flexShrink: 0,
             alignItems: "center",
-            fontSize: 20,
+            fontSize: LABEL_SIZE,
             lineHeight: 1,
             letterSpacing: 2,
             color: "#A3A3A3",
@@ -63,9 +72,16 @@ export async function applePassStripPng({
         {lines.map((line, index) => (
           <div
             key={`${index}-${line}`}
-            style={{ display: "flex", flexDirection: "column", width: "100%" }}
+            style={{ display: "flex", flexDirection: "column", width: "100%", flexShrink: 0 }}
           >
-            <div style={{ display: "flex", height: index === 0 ? 8 : lineGap, width: "100%" }} />
+            <div
+              style={{
+                display: "flex",
+                height: index === 0 ? 6 : lineGap,
+                width: "100%",
+                flexShrink: 0,
+              }}
+            />
             <div
               style={{
                 display: "flex",
@@ -80,20 +96,56 @@ export async function applePassStripPng({
             </div>
           </div>
         ))}
-        <div style={{ display: "flex", height: 8, width: "100%" }} />
+        <div
+          style={{ display: "flex", height: teleGap, width: "100%", flexShrink: 0 }}
+        />
         <div
           style={{
             display: "flex",
-            height: 28,
+            height: 30,
+            flexShrink: 0,
             alignItems: "center",
-            justifyContent: "flex-end",
-            width: "100%",
-            fontSize: 26,
+            fontSize: LABEL_SIZE,
             lineHeight: 1,
-            color: "#F2EDE6",
+            letterSpacing: 2,
+            color: "#A3A3A3",
           }}
         >
-          {`${breed} · ${tutorName}`}
+          {TELECONSULT_BUTTON_LABEL.toUpperCase()}
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+            height: lineBox,
+            marginTop: 4,
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              fontSize: lineSize,
+              lineHeight: 1,
+              color: "#ffffff",
+            }}
+          >
+            {APPLE_BACK_HINT}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              fontSize: 24,
+              lineHeight: 1,
+              color: "#F2EDE6",
+            }}
+          >
+            {`${breed} · ${tutorName}`}
+          </div>
         </div>
       </div>
     ),

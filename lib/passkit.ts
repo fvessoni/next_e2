@@ -281,7 +281,7 @@ async function shapeTemplate(templateId: string) {
     template.appleWalletSettings?.passType === "STORE_CARD" &&
     fieldSection(template, "meta.vacinas") === "BACK_FIELDS" &&
     fieldSection(template, "meta.vet") === "BACK_FIELDS" &&
-    fieldSection(template, "meta.backHint") === "SECONDARY_FIELDS" &&
+    fieldSection(template, "meta.backHint") === "FIELD_SECTION_DO_NOT_USE" &&
     fieldSection(template, "meta.breed") === "BACK_FIELDS" &&
     fieldSection(template, "person.displayName") === "FIELD_SECTION_DO_NOT_USE" &&
     template.appleWalletSettings?.featuredActions?.some(isTeleconsultAction) &&
@@ -301,7 +301,7 @@ async function shapeTemplate(templateId: string) {
   );
   template.data.dataFields.push(
     textField("meta.status", "Status", "HEADER_FIELDS", 0),
-    textField("meta.backHint", TELECONSULT_BUTTON_LABEL, "SECONDARY_FIELDS", 0),
+    textField("meta.backHint", TELECONSULT_BUTTON_LABEL, "FIELD_SECTION_DO_NOT_USE", 0),
     textField(
       "meta.vet",
       TELECONSULT_BUTTON_LABEL,

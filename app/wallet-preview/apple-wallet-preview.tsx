@@ -1,5 +1,4 @@
 import {
-  APPLE_BACK_HINT,
   APPLE_FEATURED_ACTION_LABEL,
   TELECONSULT_BUTTON_LABEL,
   TELECONSULT_URL,
@@ -49,13 +48,6 @@ export function AppleWalletPreview({
                 <p className="text-[13px] leading-tight text-white">{statusLine}</p>
               </div>
             </div>
-          </div>
-
-          <div className="mt-4 px-[4%]">
-            <p className="text-[10px] uppercase tracking-wide text-[#A3A3A3]">
-              {TELECONSULT_BUTTON_LABEL}
-            </p>
-            <p className="text-[13px] leading-tight text-white">{APPLE_BACK_HINT}</p>
           </div>
 
           <div className="mx-auto mt-5 flex w-36 flex-col items-center rounded-lg bg-white px-2 pb-2 pt-2 text-black">
