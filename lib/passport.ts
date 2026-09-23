@@ -6,6 +6,8 @@ export const PASSPORT_SUBTITLE = "Passaporte de Vacinação";
 export const TELECONSULT_URL = "https://next-e2.vercel.app/videocall";
 export const TELECONSULT_BUTTON_LABEL = "Tele-consulta veterinária";
 export const WALLET_BUTTON_DISPLAY = TELECONSULT_BUTTON_LABEL;
+export const APPLE_BACK_HINT = "Toque em ⓘ";
+export const APPLE_FEATURED_ACTION_LABEL = "Marcar consulta";
 export const PASSPORT_LOGO_PATH = "/kintal-logo.png";
 export const PASSPORT_BACKGROUND = "#1a1a1a";
 

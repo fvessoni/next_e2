@@ -8,6 +8,7 @@ import {
   passportStatusLine,
   sanitaryItemStatus,
   sanitaryItemStatusLabel,
+  APPLE_BACK_HINT,
   TELECONSULT_BUTTON_LABEL,
   TELECONSULT_URL,
 } from "@/lib/passport";
@@ -34,7 +35,7 @@ type PassTemplate = {
   appleWalletSettings?: {
     passType?: string;
     appLaunchUrl?: string;
-    featuredActions?: unknown[];
+    featuredActions?: FeaturedAction[];
   };
   data?: {
     dataFields?: Array<{
@@ -46,6 +47,26 @@ type PassTemplate = {
     }>;
   };
 };
+
+type FeaturedAction = {
+  identifier?: string;
+  type?: string | number;
+  url?: string;
+};
+
+const TELECONSULT_ACTION: FeaturedAction = {
+  identifier: "teleconsulta",
+  type: 12,
+  url: TELECONSULT_URL,
+};
+
+function isTeleconsultAction(action: FeaturedAction | undefined) {
+  if (!action || action.url !== TELECONSULT_URL) return false;
+  const type = String(action.type ?? "")
+    .toUpperCase()
+    .replace(/[_-]/g, "");
+  return action.type === 12 || type === "BOOKAPPOINTMENT";
+}
 
 type PassLink = {
   id?: string;
@@ -259,10 +280,11 @@ async function shapeTemplate(templateId: string) {
     template.description === "Passaporte de vacinação" &&
     template.appleWalletSettings?.passType === "STORE_CARD" &&
     fieldSection(template, "meta.vacinas") === "BACK_FIELDS" &&
-    fieldSection(template, "meta.vet") === "SECONDARY_FIELDS" &&
+    fieldSection(template, "meta.vet") === "BACK_FIELDS" &&
+    fieldSection(template, "meta.backHint") === "SECONDARY_FIELDS" &&
     fieldSection(template, "meta.breed") === "BACK_FIELDS" &&
     fieldSection(template, "person.displayName") === "FIELD_SECTION_DO_NOT_USE" &&
-    !(template.appleWalletSettings?.featuredActions?.length) &&
+    template.appleWalletSettings?.featuredActions?.some(isTeleconsultAction) &&
     !template.imageIds?.thumbnail &&
     !template.imageIds?.strip &&
     template.links?.some((link) => link.url === TELECONSULT_URL);
@@ -279,18 +301,19 @@ async function shapeTemplate(templateId: string) {
   );
   template.data.dataFields.push(
     textField("meta.status", "Status", "HEADER_FIELDS", 0),
+    textField("meta.backHint", TELECONSULT_BUTTON_LABEL, "SECONDARY_FIELDS", 0),
     textField(
       "meta.vet",
       TELECONSULT_BUTTON_LABEL,
-      "SECONDARY_FIELDS",
+      "BACK_FIELDS",
       0,
       "URL",
     ),
-    textField("meta.breed", "Raça", "BACK_FIELDS", 0),
-    textField("meta.tutor", "Tutor", "BACK_FIELDS", 1),
-    textField("meta.vacinas", "Vacinas", "BACK_FIELDS", 2),
-    textField("meta.proxima", "Próxima dose", "BACK_FIELDS", 3),
-    textField("meta.certUrl", "Certificado", "BACK_FIELDS", 4),
+    textField("meta.breed", "Raça", "BACK_FIELDS", 1),
+    textField("meta.tutor", "Tutor", "BACK_FIELDS", 2),
+    textField("meta.vacinas", "Vacinas", "BACK_FIELDS", 3),
+    textField("meta.proxima", "Próxima dose", "BACK_FIELDS", 4),
+    textField("meta.certUrl", "Certificado", "BACK_FIELDS", 5),
   );
   template.description = "Passaporte de vacinação";
   template.organizationName = "Kintal Vax";
@@ -316,7 +339,7 @@ async function shapeTemplate(templateId: string) {
     ...template.appleWalletSettings,
     passType: "STORE_CARD",
     appLaunchUrl: TELECONSULT_URL,
-    featuredActions: [],
+    featuredActions: [TELECONSULT_ACTION],
   };
   await ensureTeleconsultLink(template);
   const updated = await passkitFetch("PUT", "/template", template);
@@ -438,6 +461,7 @@ export async function createAppleWalletPassUrl(dogId: number) {
     person: { displayName: clip(dog.name, 40) },
     metaData: {
       status: clip(passportStatusLine(items, today), 40),
+      backHint: clip(APPLE_BACK_HINT, 40),
       vet: TELECONSULT_URL,
       breed: clip(`${dog.breed} · ${DOG_SIZE_LABELS[dog.size]}`, 40),
       tutor: clip(tutor.name, 40),
